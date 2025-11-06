@@ -170,9 +170,9 @@ export default function BookAppointment() {
           <Image
             src={service.imageUrl || "/img/placeholder.jpg"}
             height={250}
-            fit="cover"
+            fit="contain"
             alt={service.name}
-            className="rounded-t-md"
+            className="rounded-t-md max-h-[300px] mx-auto"
           />
           <div className="p-5">
             <Title order={3}>{service.name}</Title>

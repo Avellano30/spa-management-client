@@ -1,7 +1,7 @@
 // src/pages/app/Services.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Grid, Card, Image, Text, Button, Loader } from "@mantine/core";
+import { Grid, Card, Image, Text, Button, Loader, Center } from "@mantine/core";
 import { getAllServices, type Service } from "../../api/services";
 
 export default function AppServices() {
@@ -25,7 +25,7 @@ export default function AppServices() {
     navigate(`/book?serviceId=${serviceId}`);
   };
 
-  if (loading) return <Loader mt="xl" />;
+  if (loading) return <Center className="h-[70vh] flex-col"><Loader size="lg" /></Center>;
 
   return (
     <Grid mt="xl" className="max-w-6xl mx-auto">
@@ -39,11 +39,12 @@ export default function AppServices() {
             className="transition-transform hover:scale-[1.02] flex flex-col h-full bg-white/80 backdrop-blur-sm"
           >
             <Card.Section className="overflow-hidden rounded-lg">
-              <div className="h-[220px] w-full overflow-hidden">
+              <div className="h-[250px] w-full overflow-hidden">
                 <Image
                   src={s.imageUrl || "/img/placeholder.jpg"}
                   alt={s.name}
-                  className="h-full w-full object-cover"
+                  fit="contain"
+                  className="h-full w-full max-h-[250px]"
                 />
               </div>
             </Card.Section>
