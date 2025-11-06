@@ -86,9 +86,13 @@ export const deleteAppointment = async (id: string) => {
 };
 
 export const confirmAppointment = async (id: string) => {
-    const res = await fetch(`${endpoint}/appointment//${id}`, {
+    const res = await fetch(`${endpoint}/appointment/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ isTemporary: false})
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isTemporary: false })
     });
+    console.log(res);
     return await res.json();
 };
