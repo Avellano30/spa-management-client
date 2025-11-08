@@ -32,7 +32,7 @@ export default function AppLayout() {
       {/* HEADER */}
       <header className="flex items-center justify-between h-[60px] px-6 border-b border-gray-200 dark:border-gray-700">
         <img
-          src="/logo.svg"
+          src="/vite.svg"
           alt="logo"
           className="w-8 h-8 cursor-pointer"
           onClick={() => navigate("/")}
