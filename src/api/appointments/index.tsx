@@ -1,5 +1,6 @@
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import type { Service } from "../services";
+import type { Payment } from "../payment";
 const endpoint = import.meta.env.VITE_ENDPOINT || "http://localhost:3000";
 
 interface DecodedToken extends JwtPayload {
@@ -9,13 +10,14 @@ interface DecodedToken extends JwtPayload {
 export interface Appointment {
     _id: string;
     clientId: string;
-    serviceId: Service;
+    serviceId: Service & { price: number };
     date: string;
     startTime: string;
     endTime: string;
     status: "Pending" | "Approved" | "Cancelled" | "Completed" | "Rescheduled";
     notes?: string;
     isTemporary?: boolean;
+    payments?: Payment[];
 }
 
 export interface NewAppointment {

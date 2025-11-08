@@ -1,256 +1,205 @@
 import { useEffect, useState } from "react";
 import {
-  Button,
-  Modal,
-  Table,
-  Group,
-  Badge,
-  Select,
-  Flex,
-  Title,
-  Textarea,
-  Card,
-  ScrollArea,
-  Text,
-  Center,
+    Accordion,
+    Badge,
+    Card,
+    Divider,
+    Flex,
+    Group,
+    Loader,
+    Text,
+    Title,
+    Alert,
 } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
-import {
-  getClientAppointments,
-  cancelAppointment,
-  rescheduleAppointment,
-  type Appointment,
-} from "../../api/appointments";
-import { DateInput, TimePicker } from "@mantine/dates";
-import { IconRefresh } from "@tabler/icons-react";
+import { PaymentHistoryModal } from "../../components/PaymentHistoryModal";
+import { PaymentActions } from "../../components/PaymentActions";
+import { type Appointment, getClientAppointments } from "../../api/appointments";
+
+const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const date = new Date();
+    date.setHours(Number(hours), Number(minutes));
+    return date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
+};
+
+const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+        Completed: "green",
+        Approved: "blue",
+        Pending: "yellow",
+        Cancelled: "red",
+    };
+    return colors[status] || "orange";
+};
+
+const groupByDate = (appointments: Appointment[]) =>
+    appointments.reduce((acc: Record<string, Appointment[]>, a) => {
+        const dateKey = new Date(a.date).toISOString().split("T")[0];
+        (acc[dateKey] ||= []).push(a);
+        return acc;
+    }, {});
 
 export default function Appointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [filtered, setFiltered] = useState<Appointment[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [loading, setLoading] = useState(true);
 
-  const [rescheduleModal, setRescheduleModal] = useState(false);
-  const [selected, setSelected] = useState<Appointment | null>(null);
-  const [newDate, setNewDate] = useState<string | null>(null);
-  const [newTime, setNewTime] = useState<string | undefined>(undefined);
-  const [newNotes, setNewNotes] = useState("");
+    const fetchAppointments = async () => {
+        try {
+            setLoading(true);
+            const data = await getClientAppointments();
+            setAppointments(data);
+        } catch (err: any) {
+            showNotification({
+                color: "red",
+                title: "Error",
+                message: err.message || "Failed to load appointments",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const load = async () => {
-    try {
-      const data = await getClientAppointments();
-      setAppointments(data);
-    } catch (err: any) {
-      showNotification({ color: "red", title: "Error", message: err.message });
-    }
-  };
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
 
-  useEffect(() => {
-    load();
-  }, []);
+    if (loading)
+        return (
+            <Group justify="center" py="xl">
+                <Loader />
+            </Group>
+        );
 
-  useEffect(() => {
-    let temp = [...appointments];
-    if (statusFilter !== "All") temp = temp.filter((a) => a.status === statusFilter);
-    setFiltered(temp);
-  }, [statusFilter, appointments]);
+    const grouped = groupByDate(appointments);
 
-  const handleAction = async (id: string, action: Function, successMsg: string) => {
-    try {
-      await action(id);
-      showNotification({ color: "green", title: "Success", message: successMsg });
-      load();
-    } catch (err: any) {
-      showNotification({ color: "red", title: "Error", message: err.message });
-    }
-  };
+    const needsAction = (items: Appointment[]) =>
+        items.some((a) => {
+            if (a.status === "Pending") return true;
+            const totalPaid = a.payments
+                ?.filter((p: any) => p.status === "Completed")
+                .reduce((sum: number, p: any) => sum + p.amount, 0);
+            const remaining = a.serviceId?.price - (totalPaid || 0);
+            return remaining > 0 && a.status !== "Cancelled" && a.status !== "Completed";
+        });
 
-  const handleReschedule = async () => {
-    if (!selected || !newDate || !newTime)
-      return showNotification({
-        title: "Incomplete",
-        message: "Please select both a new date and time.",
-        color: "yellow",
-      });
+    return (
+        <>
+            {/* --- TERMS AND CONDITIONS SECTION --- */}
+            <Alert
+                icon={<IconInfoCircle size={20} />}
+                title={<Title order={5}>Booking Terms & Conditions</Title>}
+                color="blue"
+                radius="md"
+                mb="md"
+            >
+                <Text size="sm" c="dimmed">
+                    • A <strong>30% downpayment</strong> is required to confirm your booking. Once paid, your appointment will be marked as <strong>Approved</strong>.<br />
+                    • The downpayment is <strong>non-refundable</strong> to ensure schedule commitment and discourage cancellations.<br />
+                    • The remaining <strong>70% balance</strong> must be paid before or on the day of your appointment.<br />
+                    • You may <strong>cancel</strong> an appointment only while it is still <strong>Pending</strong>.<br />
+                    • You may <strong>reschedule</strong> an appointment only if it is <strong>Approved</strong> or <strong>Rescheduled</strong>, and at least <strong>24 hours before</strong> your scheduled start time.<br />
+                </Text>
+            </Alert>
 
-    try {
-      await rescheduleAppointment(
-        selected._id,
-        newDate,
-        newTime,
-        newNotes
-      );
-      showNotification({
-        color: "green",
-        title: "Rescheduled",
-        message: "Your appointment has been successfully rescheduled.",
-      });
-      setRescheduleModal(false);
-      load();
-    } catch (err: any) {
-      showNotification({ color: "red", title: "Error", message: err.message });
-    }
-  };
+            {/* --- APPOINTMENTS ACCORDION --- */}
+            <Accordion variant="separated" radius="md" multiple>
+                {Object.entries(grouped).map(([date, items]) => {
+                    const actionRequired = needsAction(items);
 
-  return (
-    <div className="p-6">
-      {/* HEADER + FILTERS */}
-      <Flex justify="space-between" align="center" mb="lg" className="flex-wrap gap-3">
-        <Title order={2} className="font-semibold">
-          My Appointments
-        </Title>
-        <Group>
-          <Select
-            placeholder="Filter status"
-            value={statusFilter}
-            onChange={(v) => setStatusFilter(v || "All")}
-            data={["All", "Pending", "Approved", "Completed", "Cancelled", "Rescheduled"]}
-            w={160}
-          />
-          <Button
-            leftSection={<IconRefresh size={16} />}
-            variant="light"
-            onClick={load}
-          >
-            Refresh
-          </Button>
-        </Group>
-      </Flex>
+                    return (
+                        <Accordion.Item key={date} value={date}>
+                            <Accordion.Control>
+                                <Group justify="space-between">
+                                    <Text fw={600}>
+                                        {new Date(date).toLocaleDateString(undefined, {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </Text>
 
-      {/* TABLE */}
-      <Card shadow="sm" radius="md" withBorder p="0" className="overflow-hidden">
-        <ScrollArea>
-          <Table striped highlightOnHover withColumnBorders verticalSpacing="sm">
-            <Table.Thead bg="gray.0">
-              <Table.Tr>
-                <Table.Th>Service</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Time</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Notes</Table.Th>
-                <Table.Th>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filtered.length > 0 ? (
-                filtered.map((a) => (
-                  <Table.Tr key={a._id}>
-                    <Table.Td>{a.serviceId.name}</Table.Td>
-                    <Table.Td>{new Date(a.date).toLocaleDateString()}</Table.Td>
-                    <Table.Td>
-                      {a.startTime} - {a.endTime}
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge color={statusColor(a.status)} variant="filled">
-                        {a.status}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                        {a.notes || "-"}
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        {(a.status === "Pending" || a.status === "Approved") && (
-                          <Button
-                            size="xs"
-                            color="red"
-                            variant="light"
-                            onClick={() => handleAction(a._id, cancelAppointment, "Appointment cancelled")}
-                          >
-                            Cancel
-                          </Button>
-                        )}
-                        {(a.status === "Approved" || a.status === "Rescheduled") && (
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            color="blue"
-                            onClick={() => {
-                              setSelected(a);
-                              setRescheduleModal(true);
-                              setNewDate(null);
-                              setNewTime(undefined);
-                              setNewNotes("");
-                            }}
-                          >
-                            Reschedule
-                          </Button>
-                        )}
-                      </Group>
-                    </Table.Td>
-                  </Table.Tr>
-                ))
-              ) : (
-                <Table.Tr>
-                  <Table.Td colSpan={6}>
-                    <Center py="xl">
-                      <Text c="dimmed">No appointments found</Text>
-                    </Center>
-                  </Table.Td>
-                </Table.Tr>
-              )}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
-      </Card>
+                                    {actionRequired && (
+                                        <Text c="red" mr="sm" size="xs" fw="bold">
+                                            Action Required *
+                                        </Text>
+                                    )}
+                                </Group>
+                            </Accordion.Control>
 
-      {/* RESCHEDULE MODAL */}
-      <Modal
-        opened={rescheduleModal}
-        onClose={() => setRescheduleModal(false)}
-        title={`Reschedule: ${selected?.serviceId.name || ""}`}
-        centered
-        size="md"
-      >
-        <Text size="sm" mb="sm" c="dimmed">
-          Choose a new date and time for your appointment.
-        </Text>
+                            <Accordion.Panel>
+                                {items.map((a) => (
+                                    <Card
+                                        key={a._id}
+                                        withBorder
+                                        radius="md"
+                                        shadow="sm"
+                                        className="p-4 mb-3 bg-white hover:shadow-md transition-all"
+                                    >
+                                        <Flex
+                                            direction={{ base: "column", sm: "row" }}
+                                            align={{ base: "stretch", sm: "center" }}
+                                            justify="space-between"
+                                            gap="md"
+                                        >
+                                            {/* LEFT SECTION */}
+                                            <Flex direction="column" gap={6} className="flex-1">
+                                                <Group justify="space-between">
+                                                    <Text fw={600} size="xl">
+                                                        {a.serviceId?.name}
+                                                    </Text>
+                                                    <Badge color={getStatusColor(a.status)}>
+                                                        {a.status}
+                                                    </Badge>
+                                                </Group>
 
-        <Group grow mb="md">
-          <DateInput
-            label="New Date"
-            value={newDate}
-            onChange={setNewDate}
-            minDate={new Date()}
-          />
-          <TimePicker
-            label="New Start Time"
-            value={newTime}
-            onChange={setNewTime}
-            format="12h"
-            withDropdown
-          />
-        </Group>
+                                                <Text size="sm">{a.serviceId?.category}</Text>
+                                                <Text size="sm" c="dimmed">
+                                                    {a.serviceId?.description}
+                                                </Text>
 
-        <Textarea
-          label="Notes (optional)"
-          placeholder="Add any notes for this reschedule..."
-          minRows={3}
-          value={newNotes}
-          onChange={(e) => setNewNotes(e.currentTarget.value)}
-          mb="md"
-        />
+                                                <Group justify="space-between">
+                                                    <Text fw={500} size="md">
+                                                        {formatTime(a.startTime)} –{" "}
+                                                        {formatTime(a.endTime)}
+                                                    </Text>
+                                                    <Text fw={500}>
+                                                        ₱{a.serviceId?.price.toFixed(2)}
+                                                    </Text>
+                                                </Group>
+                                            </Flex>
 
-        <Button fullWidth onClick={handleReschedule}>
-          Save Changes
-        </Button>
-      </Modal>
-    </div>
-  );
-}
+                                            {/* Divider */}
+                                            <Divider orientation="vertical" visibleFrom="sm" />
+                                            <Divider orientation="horizontal" hiddenFrom="sm" />
 
-function statusColor(status: string) {
-  switch (status) {
-    case "Pending":
-      return "yellow";
-    case "Approved":
-      return "blue";
-    case "Completed":
-      return "green";
-    case "Cancelled":
-      return "red";
-    case "Rescheduled":
-      return "orange";
-    default:
-      return "gray";
-  }
+                                            {/* RIGHT SECTION */}
+                                            <Flex
+                                                direction="column"
+                                                gap="xs"
+                                                align="center"
+                                                className="w-full sm:w-[220px]"
+                                            >
+                                                <PaymentActions
+                                                    appointment={a}
+                                                    refresh={fetchAppointments}
+                                                />
+                                                <PaymentHistoryModal payments={a.payments ?? []} />
+                                            </Flex>
+                                        </Flex>
+                                    </Card>
+                                ))}
+                            </Accordion.Panel>
+                        </Accordion.Item>
+                    );
+                })}
+            </Accordion>
+        </>
+    );
 }
