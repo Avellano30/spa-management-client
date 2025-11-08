@@ -66,9 +66,10 @@ export default function AppServices() {
                 fullWidth
                 color="blue"
                 className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200"
+                disabled={s.status !== "available"}
                 onClick={() => handleBookNow(s._id)}
               >
-                Book Now
+                  {s.status === "available" ? "Book Now" : "Unavailable"}
               </Button>
             </div>
           </Card>
