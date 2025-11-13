@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import {
     Accordion,
     Badge,
@@ -11,11 +11,11 @@ import {
     Title,
     Alert,
 } from "@mantine/core";
-import { IconInfoCircle } from "@tabler/icons-react";
-import { showNotification } from "@mantine/notifications";
-import { PaymentHistoryModal } from "../../components/PaymentHistoryModal";
-import { PaymentActions } from "../../components/PaymentActions";
-import { type Appointment, getClientAppointments } from "../../api/appointments";
+import {IconInfoCircle} from "@tabler/icons-react";
+import {showNotification} from "@mantine/notifications";
+import {PaymentHistoryModal} from "../../components/PaymentHistoryModal";
+import {PaymentActions} from "../../components/PaymentActions";
+import {type Appointment, getClientAppointments} from "../../api/appointments";
 
 const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
@@ -72,7 +72,7 @@ export default function Appointments() {
     if (loading)
         return (
             <Group justify="center" py="xl">
-                <Loader />
+                <Loader/>
             </Group>
         );
 
@@ -92,18 +92,24 @@ export default function Appointments() {
         <>
             {/* --- TERMS AND CONDITIONS SECTION --- */}
             <Alert
-                icon={<IconInfoCircle size={20} />}
+                icon={<IconInfoCircle size={20}/>}
                 title={<Title order={5}>Booking Terms & Conditions</Title>}
                 color="blue"
                 radius="md"
                 mb="md"
             >
                 <Text size="sm" c="dimmed">
-                    • A <strong>30% downpayment</strong> is required to confirm your booking. Once paid, your appointment will be marked as <strong>Approved</strong>.<br />
-                    • The downpayment is <strong>non-refundable</strong> to ensure schedule commitment and discourage cancellations.<br />
-                    • The remaining <strong>70% balance</strong> must be paid before or on the day of your appointment.<br />
-                    • You may <strong>cancel</strong> an appointment only while it is still <strong>Pending</strong>.<br />
-                    • You may <strong>reschedule</strong> an appointment only if it is <strong>Approved</strong> or <strong>Rescheduled</strong>, and at least <strong>24 hours before</strong> your scheduled start time.<br />
+                    • A <strong>30% downpayment</strong> is required to confirm your booking. Once paid, your
+                    appointment will be marked as <strong>Approved</strong>.<br/>
+                    • The downpayment is <strong>non-refundable</strong> to ensure schedule commitment and discourage
+                    cancellations.<br/>
+                    • The remaining <strong>70% balance</strong> must be paid before or on the day of your
+                    appointment.<br/>
+                    • You may <strong>cancel</strong> an appointment only while it is
+                    still <strong>Pending</strong>.<br/>
+                    • You may <strong>reschedule</strong> an appointment only if it
+                    is <strong>Approved</strong> or <strong>Rescheduled</strong>, and at least <strong>24 hours
+                    before</strong> your scheduled start time.<br/>
                 </Text>
             </Alert>
 
@@ -143,41 +149,46 @@ export default function Appointments() {
                                         className="p-4 mb-3 bg-white hover:shadow-md transition-all"
                                     >
                                         <Flex
-                                            direction={{ base: "column", sm: "row" }}
-                                            align={{ base: "stretch", sm: "center" }}
+                                            direction={{base: "column", sm: "row"}}
+                                            align={{base: "stretch", sm: "center"}}
                                             justify="space-between"
                                             gap="md"
                                         >
                                             {/* LEFT SECTION */}
                                             <Flex direction="column" gap={6} className="flex-1">
-                                                <Group justify="space-between">
-                                                    <Text fw={600} size="xl">
-                                                        {a.serviceId?.name}
-                                                    </Text>
-                                                    <Badge color={getStatusColor(a.status)}>
-                                                        {a.status}
-                                                    </Badge>
-                                                </Group>
+                                                {a.serviceId ? (
+                                                    <>
+                                                        <Group justify="space-between">
+                                                            <Text fw={600} size="xl">
+                                                                {a.serviceId?.name}
+                                                            </Text>
+                                                            <Badge color={getStatusColor(a.status)}>
+                                                                {a.status}
+                                                            </Badge>
+                                                        </Group>
 
-                                                <Text size="sm">{a.serviceId?.category}</Text>
-                                                <Text size="sm" c="dimmed">
-                                                    {a.serviceId?.description}
-                                                </Text>
+                                                        <Text size="sm">{a.serviceId?.category}</Text>
+                                                        <Text size="sm" c="dimmed">
+                                                            {a.serviceId?.description}
+                                                        </Text>
 
-                                                <Group justify="space-between">
-                                                    <Text fw={500} size="md">
-                                                        {formatTime(a.startTime)} –{" "}
-                                                        {formatTime(a.endTime)}
-                                                    </Text>
-                                                    <Text fw={500}>
-                                                        ₱{a.serviceId?.price.toFixed(2)}
-                                                    </Text>
-                                                </Group>
+                                                        <Group justify="space-between">
+                                                            <Text fw={500} size="md">
+                                                                {formatTime(a.startTime)} –{" "}
+                                                                {formatTime(a.endTime)}
+                                                            </Text>
+                                                            <Text fw={500}>
+                                                                ₱{a.serviceId?.price.toFixed(2)}
+                                                            </Text>
+                                                        </Group>
+                                                    </>
+                                                ) : 'Appointment record is not available. Service has been deleted.'}
+
                                             </Flex>
 
                                             {/* Divider */}
-                                            <Divider orientation="vertical" visibleFrom="sm" />
-                                            <Divider orientation="horizontal" hiddenFrom="sm" />
+                                            <Divider orientation="vertical" visibleFrom="sm"/>
+                                            <Divider orientation="horizontal" hiddenFrom="sm"/>
 
                                             {/* RIGHT SECTION */}
                                             <Flex
@@ -190,7 +201,7 @@ export default function Appointments() {
                                                     appointment={a}
                                                     refresh={fetchAppointments}
                                                 />
-                                                <PaymentHistoryModal payments={a.payments ?? []} />
+                                                <PaymentHistoryModal payments={a.payments ?? []}/>
                                             </Flex>
                                         </Flex>
                                     </Card>

@@ -31,8 +31,9 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         .filter((p: any) => p.status === "Completed")
         .reduce((sum: number, p: any) => sum + p.amount, 0);
 
-    const remaining = Math.max(appointment.serviceId.price - totalPaid, 0);
-    const downpaymentAmount = appointment.serviceId.price * 0.3;
+    const servicePrice = appointment.serviceId?.price || 0
+    const remaining = Math.max(servicePrice - totalPaid, 0);
+    const downpaymentAmount = servicePrice * 0.3;
 
     // --- Time Validation (for reschedule) ---
     const appointmentStart = new Date(appointment.date);
