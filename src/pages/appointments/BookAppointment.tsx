@@ -13,7 +13,9 @@ import {
     SegmentedControl,
     Stack,
     Textarea,
-    Stepper, Alert,
+    Stepper,
+    Modal, Checkbox,
+    ScrollArea,
 } from "@mantine/core";
 import {jwtDecode} from "jwt-decode";
 import {DateInput, TimePicker} from "@mantine/dates";
@@ -21,7 +23,6 @@ import {notifications} from "@mantine/notifications";
 import {getAllServices, type Service} from "../../api/services";
 import {confirmAppointment, createAppointment, deleteAppointment} from "../../api/appointments";
 import {createOnlinePayment} from "../../api/payment";
-import {IconInfoCircle} from "@tabler/icons-react";
 
 interface DecodedToken {
     userId: string;
@@ -40,6 +41,11 @@ export default function BookAppointment() {
     const [paymentMode, setPaymentMode] = useState<"Full" | "Downpayment">("Full");
     const [tempAppointmentId, setTempAppointmentId] = useState<string | null>(null);
 
+    // Terms modal state
+    const [termsOpened, setTermsOpened] = useState(false);
+    const [termsAgreed, setTermsAgreed] = useState(false); // final persisted agreement
+    const [termsChecked, setTermsChecked] = useState(false); // temporary checkbox in modal
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -49,7 +55,65 @@ export default function BookAppointment() {
             .catch(console.error);
     }, [serviceId]);
 
+    useEffect(() => {
+        const agreed = localStorage.getItem("termsAgreed");
+        if (agreed === "true") {
+            setTermsAgreed(true);
+            setTermsChecked(false); // no need to check the box automatically
+        } else {
+            setTermsAgreed(false);
+            setTermsChecked(false);
+            // Show modal so user can agree (optional - only show if they haven't agreed)
+            setTermsOpened(true);
+        }
+    }, []);
+
+    const openTermsModal = () => {
+        // Reset temporary checkbox whenever modal opens so they must actively check it and press Continue
+        setTermsChecked(false);
+        setTermsOpened(true);
+    };
+
+    const handleContinueAgree = () => {
+        // Persist agreement only when user clicks Continue
+        setTermsAgreed(true);
+        localStorage.setItem("termsAgreed", "true");
+        setTermsOpened(false);
+    };
+
+    const handleCloseTermsModal = () => {
+        // If they close without pressing Continue, clear temporary check and ensure persisted agreement is false.
+        // Only override localStorage if they haven't previously agreed.
+        setTermsOpened(false);
+        setTermsChecked(false);
+        if (!termsAgreed) {
+            setTermsAgreed(false);
+            localStorage.setItem("termsAgreed", "false");
+        }
+    };
+
     const handleNext = async () => {
+        if (!termsAgreed) {
+            return notifications.show({
+                title: "Terms not agreed",
+                message: (
+                    <Text size="sm">
+                        You must agree to the Terms & Conditions before booking.{" "}
+                        <Text
+                            span
+                            c="blue"
+                            fw={600}
+                            style={{ cursor: "pointer", textDecoration: "underline" }}
+                            onClick={openTermsModal}
+                        >
+                            Click here to review & agree.
+                        </Text>
+                    </Text>
+                ),
+                color: "yellow",
+            });
+        }
+
         if (active === 0 && (!date || !time)) {
             return notifications.show({
                 title: "Incomplete Details",
@@ -165,28 +229,72 @@ export default function BookAppointment() {
 
     return (
         <>
-            {/* --- TERMS AND CONDITIONS SECTION --- */}
-            <Alert
-                icon={<IconInfoCircle size={20}/>}
-                title={<Title order={5}>Booking Terms & Conditions</Title>}
-                color="blue"
-                radius="md"
-                mb="md"
+            {/* --- Terms & Conditions Modal --- */}
+            <Modal
+                opened={termsOpened}
+                onClose={handleCloseTermsModal}
+                title="Terms & Conditions"
+                size="md"
             >
-                <Text size="sm" c="dimmed">
-                    • A <strong>30% downpayment</strong> is required to confirm your booking. Once paid, your
-                    appointment will be marked as <strong>Approved</strong>.<br/>
-                    • The downpayment is <strong>non-refundable</strong> to ensure schedule commitment and discourage
-                    cancellations.<br/>
-                    • The remaining <strong>70% balance</strong> must be paid before or on the day of your
-                    appointment.<br/>
-                    • You may <strong>cancel</strong> an appointment only while it is
-                    still <strong>Pending</strong>.<br/>
-                    • You may <strong>reschedule</strong> an appointment only if it
-                    is <strong>Approved</strong> or <strong>Rescheduled</strong>, and at least <strong>24 hours
-                    before</strong> your scheduled start time.<br/>
-                </Text>
-            </Alert>
+                <ScrollArea h={300} className="border border-gray-300 p-4 rounded-xl">
+                    <Text size="sm" c="dimmed">
+                        <strong>Booking Policy:</strong><br/>
+                        • A <strong>30% downpayment</strong> is required to confirm your booking.<br/>
+                        • The downpayment is <strong>non-refundable</strong>.<br/>
+                        • Remaining <strong>70% balance</strong> must be paid before or on the day of the appointment.<br/>
+                        • All appointments are subject to availability and are considered confirmed only after downpayment is received.<br/>
+                        • Clients are responsible for ensuring their contact information is accurate for booking confirmation and notifications.<br/><br/>
+
+                        <strong>Cancellation & Rescheduling:</strong><br/>
+                        • You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Pending</strong>.<br/>
+                        • You may <strong>reschedule</strong> an appointment if it is <strong>Approved</strong> or <strong>Rescheduled</strong>, provided it is done at least <strong>24 hours before</strong> the scheduled start time.<br/>
+                        • Cancellations or reschedule requests made less than 24 hours before the appointment may not be accommodated.<br/>
+                        • Refunds are not provided for cancellations, except when the spa must cancel due to unavoidable circumstances.<br/><br/>
+
+                        <strong>Late Arrival Policy:</strong><br/>
+                        • Arriving more than <strong>15 minutes late</strong> may result in a shortened session to avoid impacting other clients.<br/>
+                        • Excessive delays may be treated as a no-show, resulting in forfeiture of any payments made.<br/><br/>
+
+                        <strong>No-Show Policy:</strong><br/>
+                        • Failure to arrive without prior notice will be considered a <strong>no-show</strong> and may result in full service charges or forfeiture of downpayment.<br/>
+                        • Repeated no-shows may result in booking restrictions.<br/><br/>
+
+                        <strong>Health & Safety:</strong><br/>
+                        • Please inform your therapist of any medical conditions, injuries, allergies, or physical limitations before your session.<br/>
+                        • The spa reserves the right to decline or modify treatment based on health concerns for client safety.<br/><br/>
+
+                        <strong>Client Conduct & Etiquette:</strong><br/>
+                        • Respectful behavior toward staff and other clients is required at all times.<br/>
+                        • Inappropriate or abusive behavior may result in the immediate termination of the session with no refund.<br/><br/>
+
+                        <strong>Privacy & Confidentiality:</strong><br/>
+                        • All client information is kept confidential and is used only for booking and service purposes.<br/><br/>
+
+                        <strong>Agreement:</strong><br/>
+                        • By checking the agreement box and proceeding with the booking, you acknowledge that you have read, understood, and agreed to all terms and conditions listed above.<br/>
+                    </Text>
+
+                </ScrollArea>
+
+                <Checkbox
+                    mt="md"
+                    checked={termsChecked}
+                    onChange={(e) => {
+                        setTermsChecked(e.currentTarget.checked);
+                    }}
+                    label="I agree to the Terms & Conditions"
+                />
+
+                <Button
+                    mt="md"
+                    fullWidth
+                    disabled={!termsChecked}
+                    onClick={handleContinueAgree}
+                >
+                    Continue
+                </Button>
+            </Modal>
+
 
             <Container size="lg" className="py-1">
                 <div className="flex flex-col md:flex-row gap-10">

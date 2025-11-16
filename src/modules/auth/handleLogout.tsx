@@ -8,6 +8,7 @@ export default function useHandleLogout() {
     const handleLogout = () => {
         setAuthState(null);
         localStorage.removeItem("session");
+        localStorage.removeItem("termsAgreed");
         navigate("/");
     };
 

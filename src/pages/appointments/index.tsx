@@ -99,29 +99,7 @@ export default function Appointments() {
 
     return (
         <>
-            {/* --- TERMS AND CONDITIONS SECTION --- */}
-            <Alert
-                icon={<IconInfoCircle size={20}/>}
-                title={<Title order={5}>Booking Terms & Conditions</Title>}
-                color="blue"
-                radius="md"
-                mb="md"
-            >
-                <Text size="sm" c="dimmed">
-                    • A <strong>30% downpayment</strong> is required to confirm your booking. Once paid, your
-                    appointment will be marked as <strong>Approved</strong>.<br/>
-                    • The downpayment is <strong>non-refundable</strong> to ensure schedule commitment and discourage
-                    cancellations.<br/>
-                    • The remaining <strong>70% balance</strong> must be paid before or on the day of your
-                    appointment.<br/>
-                    • You may <strong>cancel</strong> an appointment only while it is
-                    still <strong>Pending</strong>.<br/>
-                    • You may <strong>reschedule</strong> an appointment only if it
-                    is <strong>Approved</strong> or <strong>Rescheduled</strong>, and at least <strong>24 hours
-                    before</strong> your scheduled start time.<br/>
-                </Text>
-            </Alert>
-
+            <Title className="pb-4">My Appointments</Title>
             {/* --- APPOINTMENTS ACCORDION --- */}
             <Accordion variant="separated" radius="md" multiple>
                 {Object.entries(grouped).map(([date, items]) => {
