@@ -55,11 +55,20 @@ export default function Appointments() {
             const data = await getClientAppointments();
             setAppointments(data);
         } catch (err: any) {
-            showNotification({
-                color: "red",
-                title: "Error",
-                message: err.message || "Failed to load appointments",
-            });
+            if (err.message == "No appointments found for this client") {
+                showNotification({
+                    color: "blue",
+                    title: "No Appointments",
+                    message: "Create your first booking.",
+                });
+            } else {
+                showNotification({
+                    color: "red",
+                    title: "Error",
+                    message: err.message || "Failed to load appointments",
+                });
+            }
+
         } finally {
             setLoading(false);
         }
