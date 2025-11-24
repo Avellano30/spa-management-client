@@ -31,12 +31,16 @@ import AppHome from './pages/app/Home.tsx';
 import BookAppointment from './pages/appointments/BookAppointment.tsx';
 import PaymentSuccess from './pages/payment/Success.tsx';
 import PaymentCancelled from './pages/payment/Cancel.tsx';
+import RequestReset from './pages/passwordReset/requestReset.tsx';
+import ResetPasswordPage from './pages/passwordReset/resetPassword.tsx';
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
             <Route path='/sign-in' element={<SignIn />} />
             <Route path='/sign-up' element={<SignUp />} />
+            <Route path="/password-reset" element={<RequestReset />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route element={<AppLayout />}>
                 <Route path='/' element={<AppHome />} />
                 <Route path='/about' element={<AppAbout />} />

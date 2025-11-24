@@ -1,4 +1,4 @@
-import { Divider } from "@mantine/core";
+import { Divider, Input, PasswordInput, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { MdArrowRight } from "react-icons/md";
@@ -39,45 +39,55 @@ export default function SignIn() {
                         <div className="my-4">
                             <Divider my="xs" label={<span className="text-black">or</span>} labelPosition="center" className="font-bold text-black" color="black" />
                         </div>
-                        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(email, password) }}>
-                            <input
-                                type="text"
-                                placeholder="Email"
-                                className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                data-testid="email-login-field"
-                            />
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                data-testid="password-login-field"
-                            />
-                            {errorMessage && (
-                                <p className="text-[#e50914] text-[13px] font-semibold" data-testid={`error-message`}>Incorrect email or password.</p>
-                            )}
-                            <button
-                                type="submit"
-                                className="w-full bg-[#e50914] hover:bg-red-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
-                                data-testid="login-button"
-                            >
-                                Sign In
-                                <MdArrowRight className="ml-1 text-xl opacity-75" />
-                            </button>
+                        <form onSubmit={(e) => { e.preventDefault(); handleLogin(email, password) }}>
+                            <Stack gap="md">
+                                <Input
+                                    variant="unstyled"
+                                    type="text"
+                                    placeholder="Email"
+                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    data-testid="email-login-field"
+                                />
+                                <PasswordInput
+                                    variant="unstyled"
+                                    type="password"
+                                    placeholder="Password"
+                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    data-testid="password-login-field"
+                                />
+                                {errorMessage && (
+                                    <p className="text-[#e50914] text-[13px] font-semibold" data-testid={`error-message`}>Incorrect email or password.</p>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="w-full bg-[#e50914] hover:bg-red-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
+                                    data-testid="login-button"
+                                >
+                                    Sign In
+                                    <MdArrowRight className="ml-1 text-xl opacity-75" />
+                                </button>
+                            </Stack>
                         </form>
                     </div>
                     <div className="px-10 py-4 text-center rounded-lg shadow-lg">
-                        <p className="text-sm">
-                            Don't have an account?
+                        <p className="text-sm flex justify-between">
                             <Link
                                 to={`/sign-up${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-                                className="text-[#e50914] hover:border-b-2 border-[#e50914] font-bold ml-1"
+                                className="text-[#e50914] hover:border-b border-[#e50914] font-semibold"
                                 data-testid="signup-button"
                             >
-                                Sign up
+                                Don't have an account?
+                            </Link>
+                            <Link
+                                to="/password-reset"
+                                className="text-[#e50914] hover:border-b border-[#e50914] font-semibold"
+                                data-testid="password-reset-button"
+                            >
+                                Forgot Password?
                             </Link>
                         </p>
                     </div>
