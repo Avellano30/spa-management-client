@@ -1,4 +1,3 @@
-// src/pages/app/Services.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Grid, Card, Image, Text, Button, Loader, Center } from "@mantine/core";
@@ -65,11 +64,11 @@ export default function AppServices() {
                 mt="md"
                 fullWidth
                 color="blue"
-                className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200"
+                className="bg-blue-600! hover:bg-blue-700! text-white transition-all duration-200"
                 disabled={s.status !== "available"}
                 onClick={() => handleBookNow(s._id)}
               >
-                  {s.status === "available" ? "Book Now" : "Unavailable"}
+                {s.status === "available" ? "Book Now" : "Unavailable"}
               </Button>
             </div>
           </Card>

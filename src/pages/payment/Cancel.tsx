@@ -6,7 +6,7 @@ export default function PaymentCancelled() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const timeout = setTimeout(() => navigate("/services"), 2000);
+        const timeout = setTimeout(() => navigate("/"), 2000);
         return () => clearTimeout(timeout);
     }, [navigate]);
 

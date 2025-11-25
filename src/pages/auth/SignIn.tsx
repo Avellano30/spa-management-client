@@ -25,7 +25,7 @@ export default function SignIn() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="max-w-[394px] w-full bg-white rounded-lg">
                     <div className="px-10 py-8 rounded-lg shadow-lg">
-                        <h2 className="text-[30px] font-bold text-center text-[#e50914] mb-8">SPA</h2>
+                        <h2 className="text-[30px] font-bold text-center text-blue-600 mb-8">SPA</h2>
                         <h2 className="text-[17px] font-bold text-center">Login into your account</h2>
                         <p className="text-[13px] mb-8 text-center">Welcome back! Please sign in to continue</p>
                         <button
@@ -45,7 +45,7 @@ export default function SignIn() {
                                     variant="unstyled"
                                     type="text"
                                     placeholder="Email"
-                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-700" : "border-black"}`}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     data-testid="email-login-field"
@@ -54,17 +54,17 @@ export default function SignIn() {
                                     variant="unstyled"
                                     type="password"
                                     placeholder="Password"
-                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                    className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-700" : "border-black"}`}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     data-testid="password-login-field"
                                 />
                                 {errorMessage && (
-                                    <p className="text-[#e50914] text-[13px] font-semibold" data-testid={`error-message`}>Incorrect email or password.</p>
+                                    <p className="text-blue-600 text-[13px] font-semibold" data-testid={`error-message`}>Incorrect email or password.</p>
                                 )}
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#e50914] hover:bg-red-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
                                     data-testid="login-button"
                                 >
                                     Sign In
@@ -77,14 +77,14 @@ export default function SignIn() {
                         <p className="text-sm flex justify-between">
                             <Link
                                 to={`/sign-up${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-                                className="text-[#e50914] hover:border-b border-[#e50914] font-semibold"
+                                className="text-blue-600 hover:border-b-2 border-blue-700 font-semibold"
                                 data-testid="signup-button"
                             >
                                 Don't have an account?
                             </Link>
                             <Link
                                 to="/password-reset"
-                                className="text-[#e50914] hover:border-b border-[#e50914] font-semibold"
+                                className="text-blue-600 hover:border-b-2 border-blue-700 font-semibold"
                                 data-testid="password-reset-button"
                             >
                                 Forgot Password?

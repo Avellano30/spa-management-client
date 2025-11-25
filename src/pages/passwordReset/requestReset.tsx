@@ -24,7 +24,7 @@ export default function RequestReset() {
     return (
         <Container size="xs" mt={60}>
             <div className="bg-white rounded-lg shadow-lg p-8">
-                <Title order={2} c="#e50914" mb="md" className="text-center">
+                <Title order={2} mb="md" className="text-center text-blue-600">
                     SPA
                 </Title>
                 <Title order={4} mb="sm" className="text-center">
@@ -42,7 +42,7 @@ export default function RequestReset() {
                     mt="md"
                     onClick={handleSubmit}
                     loading={loading}
-                    color="#e50914"
+                    className="bg-blue-600!"
                 >
                     Send Reset Link
                 </Button>

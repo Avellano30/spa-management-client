@@ -25,7 +25,6 @@ import SignIn from "./pages/auth/SignIn.tsx";
 import SignUp from './pages/auth/SignUp.tsx';
 import Settings from './pages/settings/index.tsx';
 import Appointments from './pages/appointments/index.tsx';
-import AppServices from './pages/app/Services.tsx';
 import AppAbout from './pages/app/About.tsx';
 import AppHome from './pages/app/Home.tsx';
 import BookAppointment from './pages/appointments/BookAppointment.tsx';
@@ -44,7 +43,6 @@ const router = createBrowserRouter(
             <Route element={<AppLayout />}>
                 <Route path='/' element={<AppHome />} />
                 <Route path='/about' element={<AppAbout />} />
-                <Route path='/services' element={<AppServices />} />
             </Route>
             <Route element={<PrivateRoutes />}>
                 <Route path='/my-appointments' element={<Appointments />} />

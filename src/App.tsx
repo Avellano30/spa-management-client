@@ -24,94 +24,92 @@ export default function AppLayout() {
   const navLinks = [
     { label: "Home", path: "/" },
     { label: "About", path: "/about" },
-    { label: "Services", path: "/services" },
   ];
 
   return (
-    <Box pb={120}>
-      {/* HEADER */}
-      <header className="flex items-center justify-between h-[60px] px-6 border-b border-gray-200 dark:border-gray-700">
-        <img
-          src="/vite.svg"
-          alt="logo"
-          className="w-8 h-8 cursor-pointer"
-          onClick={() => navigate("/")}
-        />
+    <Box>
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 h-[62px] flex items-center justify-between">
 
-        {/* NAV LINKS (Desktop) */}
-        <Group h="100%" gap={0} visibleFrom="sm">
-          {navLinks.map((link) => {
-            const isActive = location.pathname === link.path;
-            return (
-              <button
-                key={link.path}
-                onClick={() => navigate(link.path)}
-                className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 
-                  ${
-                    isActive
-                      ? "text-blue-500 dark:text-blue-400"
-                      : "text-gray-700 dark:text-gray-300 hover:text-blue-500"
-                  }`}
-              >
-                {link.label}
-                <span
-                  className={`absolute left-1/2 -bottom-0.5 h-0.5 w-1/2 rounded transform -translate-x-1/2 transition-all duration-200 
-                    ${
-                      isActive
-                        ? "bg-blue-500 dark:bg-blue-400 scale-x-100"
-                        : "bg-transparent scale-x-0"
-                    }`}
-                />
-              </button>
-            );
-          })}
-        </Group>
+          {/* Logo */}
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <img src="/logo.png" className="w-8 h-8" />
+            <span className="hidden sm:block font-semibold text-gray-900 text-lg">
+              Serenity Spa
+            </span>
+          </div>
 
-        {/* RIGHT SIDE BUTTONS */}
-        <Group visibleFrom="sm">
-          {!authState ? (
-            <>
-              <Button variant="default" onClick={() => navigate("/sign-in")}>
-                Log in
-              </Button>
-              <Button onClick={() => navigate("/sign-up")}>Sign up</Button>
-            </>
-          ) : (
-            <Menu shadow="md" width={180}>
-              <Menu.Target>
-                <Avatar color="blue" className="cursor-pointer">
-                  {authState.firstName.charAt(0).toUpperCase()}
-                </Avatar>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>
-                  Hello, {authState.firstName} 👋
-                </Menu.Label>
-                <Menu.Item onClick={() => navigate("/my-appointments")}>
-                  My Appointments
-                </Menu.Item>
-                <Menu.Item onClick={() => navigate("/settings")}>
-                  Settings
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item color="red" onClick={() => handleLogout()}>
-                  Logout
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          )}
-        </Group>
+          {/* Desktop Navigation */}
+          <Group gap={24} visibleFrom="sm">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <button
+                  key={link.path}
+                  onClick={() => navigate(link.path)}
+                  className={`
+                    relative text-sm font-medium transition
+                    ${isActive ? "text-gray-900" : "text-gray-600 hover:text-gray-900"}
+                  `}
+                >
+                  {link.label}
 
-        {/* MOBILE BURGER */}
-        <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
+                  {/* Minimal underline */}
+                  {isActive && (
+                    <span className="absolute left-0 right-0 -bottom-1 h-[2px] bg-gray-900 rounded-full"></span>
+                  )}
+                </button>
+              );
+            })}
+          </Group>
+
+          {/* Right User Actions */}
+          <Group visibleFrom="sm">
+            {!authState ? (
+              <>
+                <Button variant="default" size="xs" onClick={() => navigate("/sign-in")}>
+                  Log in
+                </Button>
+                <Button
+                  size="xs"
+                  className="bg-blue-600! hover:bg-blue-700! text-white"
+                  onClick={() => navigate("/sign-up")}
+                >
+                  Sign up
+                </Button>
+              </>
+            ) : (
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <Avatar radius="xl" className="cursor-pointer bg-gray-200 text-gray-900">
+                    {authState.firstName.charAt(0).toUpperCase()}
+                  </Avatar>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Label>Hello, {authState.firstName}</Menu.Label>
+                  <Menu.Item onClick={() => navigate("/my-appointments")}>My Appointments</Menu.Item>
+                  <Menu.Item onClick={() => navigate("/settings")}>Settings</Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item color="red" onClick={handleLogout}>Logout</Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
+          </Group>
+
+          <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
+        </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main className="p-6">
+      {/* Main content */}
+      <main className="p-6 max-w-7xl mx-auto">
         <Outlet />
       </main>
 
-      {/* DRAWER FOR MOBILE */}
+      {/* Mobile Drawer */}
       <Drawer
         opened={drawerOpened}
         onClose={closeDrawer}
@@ -119,10 +117,10 @@ export default function AppLayout() {
         padding="md"
         title="Navigation"
         hiddenFrom="sm"
-        zIndex={1000000}
       >
-        <ScrollArea h="calc(100vh - 80px)" mx="-md">
+        <ScrollArea h="calc(100vh - 80px)">
           <Divider my="sm" />
+
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -132,12 +130,10 @@ export default function AppLayout() {
                   navigate(link.path);
                   closeDrawer();
                 }}
-                className={`block w-full text-left px-4 py-3 rounded-md text-base font-medium transition-colors 
-                  ${
-                    isActive
-                      ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
-                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                  }`}
+                className={`
+                  w-full text-left px-4 py-3 rounded-md text-base font-medium
+                  ${isActive ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-100"}
+                `}
               >
                 {link.label}
               </button>
@@ -148,10 +144,10 @@ export default function AppLayout() {
 
           {!authState ? (
             <Group justify="center" grow pb="xl" px="md">
-              <Button variant="default" onClick={() => navigate("/sign-in")}>
-                Log in
+              <Button variant="default" onClick={() => navigate("/sign-in")}>Log in</Button>
+              <Button className="!bg-blue-600 hover:!bg-blue-700 text-white" onClick={() => navigate("/sign-up")}>
+                Sign up
               </Button>
-              <Button onClick={() => navigate("/sign-up")}>Sign up</Button>
             </Group>
           ) : (
             <Group justify="center" grow pb="xl" px="md">

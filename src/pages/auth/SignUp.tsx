@@ -97,7 +97,7 @@ export default function SignUp() {
                 <div className={`max-w-[394px] w-full bg-white rounded-lg ${shake ? "shake" : ""}`}>
                     <div className="px-10 py-8 rounded-lg shadow-lg">
                         {/* Header */}
-                        <h2 className="text-[30px] font-bold text-center text-[#e50914] mb-8">SPA</h2>
+                        <h2 className="text-[30px] font-bold text-center text-blue-600 mb-8">SPA</h2>
                         <h2 className="text-[17px] font-bold text-center">Create your account</h2>
                         <p className="text-[13px] mb-8 text-center">Welcome! Please fill in the details to get started</p>
 
@@ -119,14 +119,14 @@ export default function SignUp() {
                                     <input
                                         type="text"
                                         placeholder="Username"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={userName}
                                         onChange={(e) => setUserName(e.target.value)}
                                     />
                                     <input
                                         type="email"
                                         placeholder="Email"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
@@ -181,7 +181,7 @@ export default function SignUp() {
                                         </Stack>
                                     )}
 
-                                    {errorMessage && <p className="text-[#e50914] text-sm font-semibold">{errorMessage}</p>}
+                                    {errorMessage && <p className="text-blue-600 text-sm font-semibold">{errorMessage}</p>}
 
                                     {/* Back + Register Buttons */}
                                     <div className="flex justify-between mt-4">
@@ -194,7 +194,7 @@ export default function SignUp() {
                                         </button>
                                         <button
                                             type="button"
-                                            className="bg-[#e50914] hover:bg-red-700 text-white px-4 py-1.5 rounded-md font-bold flex items-center"
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold flex items-center"
                                             onClick={async () => {
                                                 await handleRegister({
                                                     domain,
@@ -217,14 +217,14 @@ export default function SignUp() {
                                     <input
                                         type="text"
                                         placeholder="First Name"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
                                     />
                                     <input
                                         type="text"
                                         placeholder="Last Name"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
                                     />
@@ -232,7 +232,7 @@ export default function SignUp() {
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="Phone Number (e.g. 0917-123-4567)"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-[#e50914]" : "border-black"}`}
+                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={phoneNumber}
                                         onChange={(e) => {
                                             const digits = digitsOnly(e.target.value);
@@ -242,11 +242,11 @@ export default function SignUp() {
                                         }}
                                     />
 
-                                    {errorMessage && <p className="text-[#e50914] text-sm font-semibold">{errorMessage}</p>}
+                                    {errorMessage && <p className="text-blue-600 text-sm font-semibold">{errorMessage}</p>}
 
                                     <button
                                         type="button"
-                                        className={`w-full bg-[#e50914] hover:bg-red-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center ${!isPhoneValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                                        className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center ${!isPhoneValid ? "opacity-50 cursor-not-allowed" : ""}`}
                                         disabled={!isPhoneValid}
                                         onClick={() => handleContinueClick({ firstName, lastName, phoneNumber, setNextField, setErrorMessage, setShake })}
                                     >
@@ -260,7 +260,7 @@ export default function SignUp() {
                     <div className="px-10 py-4 text-center rounded-lg shadow-lg">
                         <p className="text-sm">
                             Already have an account?
-                            <a href="/sign-in" className="text-[#e50914] hover:border-b-2 border-[#e50914] font-bold ml-1">Sign in</a>
+                            <a href="/sign-in" className="text-blue-600 hover:border-b-2 border-blue-600 font-bold ml-1">Sign in</a>
                         </p>
                     </div>
                 </div>
