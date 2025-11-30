@@ -28,14 +28,16 @@ export default function SignIn() {
                         <h2 className="text-[25px] font-bold text-center text-blue-600 mb-8">Serenity Spa</h2>
                         <h2 className="text-[17px] font-bold text-center">Login into your account</h2>
                         <p className="text-[13px] mb-8 text-center">Welcome back! Please sign in to continue</p>
-                        <button
+                        <Button
+                            variant="default"
                             type="button"
-                            className="flex w-full py-1.5 px-3 justify-center items-center border border-black rounded-md font-semibold text-gray-800 text-[13px] hover:drop-shadow-md"
+                            leftSection={<FcGoogle size={18} />}
+                            className="w-full! py-1.5 px-3 border border-black! rounded-md font-semibold text-gray-800! text-[13px] hover:drop-shadow-md"
                             onClick={() => login()}
                             data-testid="google-login-button"
                         >
-                            <FcGoogle className="text-[17px] mr-2" />Continue with Google
-                        </button>
+                            Continue with Google
+                        </Button>
                         <div className="my-4">
                             <Divider my="xs" label={<span className="text-black">or</span>} labelPosition="center" className="font-bold text-black" color="black" />
                         </div>
