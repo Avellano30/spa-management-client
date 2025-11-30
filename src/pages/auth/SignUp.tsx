@@ -9,6 +9,7 @@ import {
     Stack,
     Progress,
     Box,
+    Button,
 } from "@mantine/core";
 import { FcGoogle } from "react-icons/fc";
 import { useLocation, useNavigate } from "react-router";
@@ -40,6 +41,7 @@ export default function SignUp() {
     const [nextField, setNextField] = useState<boolean>(false);
     const [passwordFocused, setPasswordFocused] = useState<boolean>(false);
     const [shake, setShake] = useState<boolean>(false);
+    const [isRegistering, setIsRegistering] = useState(false);
 
     const { setAuthState } = useAuth();
     const navigate = useNavigate();
@@ -192,10 +194,13 @@ export default function SignUp() {
                                         >
                                             Back
                                         </button>
-                                        <button
+                                        <Button
+                                            loading={isRegistering}
                                             type="button"
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold flex items-center"
+                                            className="bg-blue-600! hover:bg-blue-700! text-white px-4 py-1.5 rounded-md font-bold flex items-center"
                                             onClick={async () => {
+                                                if (isRegistering) return;
+                                                setIsRegistering(true);
                                                 await handleRegister({
                                                     domain,
                                                     form: { firstName, lastName, userName, email, password, phoneNumber },
@@ -205,10 +210,11 @@ export default function SignUp() {
                                                     redirect: redirect ?? undefined,
                                                     setShake,
                                                 });
+                                                setIsRegistering(false);
                                             }}
                                         >
                                             Register <MdArrowRight className="ml-1 text-xl opacity-75" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </>
                             ) : (
