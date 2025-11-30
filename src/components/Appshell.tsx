@@ -10,7 +10,7 @@ type NavItem = { icon: any; label: string; href: string };
 
 const navData: NavItem[] = [
     { icon: IconCalendarWeek, label: "Appointments", href: "/my-appointments" },
-    { icon: IconMassage, label: "Services", href: "/" },
+    { icon: IconMassage, label: "Services", href: "/#" },
     { icon: IconSettings, label: "Settings", href: "/settings" },
 ];
 
