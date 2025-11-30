@@ -28,6 +28,12 @@ export default function useHandleLogin() {
             });
 
             if (!response.ok) {
+                if (response.status === 403) {
+                    const data = await response.json();
+                    navigate(data.redirect);
+                    return;
+                }
+
                 setErrorMessage(true);
                 return;
             }
@@ -69,6 +75,11 @@ export default function useHandleLogin() {
                 }
 
                 const tokens = await response.json();
+
+                if (!tokens.token) {
+                    navigate(tokens.redirect);
+                    return;
+                }
 
                 setAuthState({ firstName: tokens.firstName, lastName: tokens.lastName, email: tokens.email });
                 localStorage.setItem('session', tokens.token);

@@ -199,6 +199,11 @@ export async function handleRegister(params: {
 
         const session = await response.json();
 
+        if (!session.token) {
+            navigate(session.redirect);
+            return;
+        }
+
         setAuthState({
             firstName: session.firstName,
             lastName: session.lastName,

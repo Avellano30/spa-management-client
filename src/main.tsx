@@ -32,14 +32,14 @@ import PaymentSuccess from './pages/payment/Success.tsx';
 import PaymentCancelled from './pages/payment/Cancel.tsx';
 import RequestReset from './pages/passwordReset/requestReset.tsx';
 import ResetPasswordPage from './pages/passwordReset/resetPassword.tsx';
+import ResendEmailVerification from './pages/emailVerification/resendEmailVerification.tsx';
+import EmailVerification from './pages/emailVerification/emaillVerification.tsx';
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
             <Route path='/sign-in' element={<SignIn />} />
             <Route path='/sign-up' element={<SignUp />} />
-            <Route path="/password-reset" element={<RequestReset />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route element={<AppLayout />}>
                 <Route path='/' element={<AppHome />} />
                 <Route path='/about' element={<AppAbout />} />
@@ -48,9 +48,13 @@ const router = createBrowserRouter(
                 <Route path='/my-appointments' element={<Appointments />} />
                 <Route path='/book' element={<BookAppointment />} />
                 <Route path='/settings' element={<Settings />} />
+                <Route path='/payment-success' element={<PaymentSuccess />} />
+                <Route path='/payment-cancelled' element={<PaymentCancelled />} />
             </Route>
-            <Route path='/payment-success' element={<PaymentSuccess />} />
-            <Route path='/payment-cancelled' element={<PaymentCancelled />} />
+            <Route path="/password-reset" element={<RequestReset />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/email-verification" element={<ResendEmailVerification />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
         </>
     )
 );
