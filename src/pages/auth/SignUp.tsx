@@ -10,6 +10,7 @@ import {
     Progress,
     Box,
     Button,
+    Input,
 } from "@mantine/core";
 import { FcGoogle } from "react-icons/fc";
 import { useLocation, useNavigate } from "react-router";
@@ -116,25 +117,29 @@ export default function SignUp() {
 
                         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                             {nextField ? (
-                                <>
+                                <Stack gap="md">
                                     {/* Step 2: Username, Email, Password */}
-                                    <input
+                                    <Input
+                                        variant="unstyled"
                                         type="text"
                                         placeholder="Username"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={userName}
                                         onChange={(e) => setUserName(e.target.value)}
                                     />
-                                    <input
+                                    <Input
+                                        variant="unstyled"
                                         type="email"
                                         placeholder="Email"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
 
                                     <PasswordInput
+                                        variant="unstyled"
                                         placeholder="Password"
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-700" : "border-black"}`}
                                         value={password}
                                         onChange={(e) => {
                                             setPassword(e.currentTarget.value);
@@ -187,13 +192,13 @@ export default function SignUp() {
 
                                     {/* Back + Register Buttons */}
                                     <div className="flex justify-between mt-4">
-                                        <button
+                                        <Button
                                             type="button"
-                                            className="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-md hover:bg-gray-300 font-semibold"
+                                            className="bg-gray-200! text-gray-700! px-4 py-1.5 rounded-md hover:bg-gray-300! font-semibold"
                                             onClick={() => setNextField(false)}
                                         >
                                             Back
-                                        </button>
+                                        </Button>
                                         <Button
                                             loading={isRegistering}
                                             type="button"
@@ -216,29 +221,32 @@ export default function SignUp() {
                                             Register <MdArrowRight className="ml-1 text-xl opacity-75" />
                                         </Button>
                                     </div>
-                                </>
+                                </Stack>
                             ) : (
-                                <>
+                                <Stack gap="md">
                                     {/* Step 1: First Name, Last Name, Phone */}
-                                    <input
+                                    <Input
+                                        variant="unstyled"
                                         type="text"
                                         placeholder="First Name"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
                                     />
-                                    <input
+                                    <Input
+                                        variant="unstyled"
                                         type="text"
                                         placeholder="Last Name"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
                                     />
-                                    <input
+                                    <Input
+                                        variant="unstyled"
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="Phone Number (e.g. 0917-123-4567)"
-                                        className={`w-full py-1.5 px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
+                                        className={`w-full px-3 border text-[13px] rounded-md ${errorMessage ? "border-blue-600" : "border-black"}`}
                                         value={phoneNumber}
                                         onChange={(e) => {
                                             const digits = digitsOnly(e.target.value);
@@ -250,15 +258,15 @@ export default function SignUp() {
 
                                     {errorMessage && <p className="text-blue-600 text-sm font-semibold">{errorMessage}</p>}
 
-                                    <button
+                                    <Button
                                         type="button"
-                                        className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center ${!isPhoneValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                                        className={`w-full bg-blue-600! hover:bg-blue-700! text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center ${!isPhoneValid ? "opacity-50 cursor-not-allowed" : ""}`}
                                         disabled={!isPhoneValid}
                                         onClick={() => handleContinueClick({ firstName, lastName, phoneNumber, setNextField, setErrorMessage, setShake })}
                                     >
                                         Continue <MdArrowRight className="ml-1 text-xl opacity-75" />
-                                    </button>
-                                </>
+                                    </Button>
+                                </Stack>
                             )}
                         </form>
                     </div>

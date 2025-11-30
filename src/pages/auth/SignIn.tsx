@@ -1,4 +1,4 @@
-import { Divider, Input, PasswordInput, Stack } from "@mantine/core";
+import { Button, Divider, Input, PasswordInput, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { MdArrowRight } from "react-icons/md";
@@ -62,14 +62,14 @@ export default function SignIn() {
                                 {errorMessage && (
                                     <p className="text-blue-600 text-[13px] font-semibold" data-testid={`error-message`}>Incorrect email or password.</p>
                                 )}
-                                <button
+                                <Button
                                     type="submit"
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
+                                    className="w-full bg-blue-600! hover:bg-blue-700! text-white font-bold text-[13px] py-1.5 rounded-md flex justify-center items-center"
                                     data-testid="login-button"
                                 >
                                     Sign In
                                     <MdArrowRight className="ml-1 text-xl opacity-75" />
-                                </button>
+                                </Button>
                             </Stack>
                         </form>
                     </div>
