@@ -63,15 +63,25 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     // --- Handle Cancel ---
     const handleCancel = async () => {
+        if (!newNotes.trim()) {
+            showNotification({
+                color: "red",
+                title: "Missing Notes",
+                message: "Please provide a reason for cancellation.",
+            });
+            return;
+        }
+
         setLoading(true);
         try {
-            await cancelAppointment(appointment._id);
+            await cancelAppointment(appointment._id, newNotes);
             showNotification({
                 color: "green",
                 title: "Cancelled",
                 message: "Appointment successfully cancelled",
             });
             setCancelModal(false);
+            setNewNotes("");
             refresh();
         } catch (err: any) {
             showNotification({
@@ -174,7 +184,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-            { appointment.status !== "Cancelled" && appointment.status !== "Completed" && <Button
+            {appointment.status !== "Cancelled" && appointment.status !== "Completed" && <Button
                 size="xs"
                 color="red"
                 variant="outline"
@@ -262,6 +272,53 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                     Save Changes
                 </Button>
             </Modal>
+
+            {/* CANCEL CONFIRMATION MODAL */}
+            <Modal
+                opened={cancelModal}
+                onClose={() => setCancelModal(false)}
+                title="Confirm Cancellation"
+                centered
+                size="sm"
+            >
+                <Stack>
+                    <Text size="sm">
+                        Are you sure you want to cancel your appointment?
+                    </Text>
+                    <Text size="sm" c="red">
+                        ⚠️ Downpayments are <strong>non-refundable</strong>.
+                    </Text>
+
+                    {/* --- Add Cancellation Notes --- */}
+                    <Textarea
+                        label="Cancellation Notes"
+                        placeholder="Please provide a reason for cancellation"
+                        minRows={3}
+                        value={newNotes}
+                        onChange={(e) => setNewNotes(e.currentTarget.value)}
+                        required
+                    />
+
+                    <Group grow mt="md">
+                        <Button
+                            color="gray"
+                            variant="outline"
+                            onClick={() => setCancelModal(false)}
+                        >
+                            Go Back
+                        </Button>
+                        <Button
+                            color="red"
+                            onClick={handleCancel}
+                            loading={loading}
+                            disabled={!newNotes.trim()} // require note
+                        >
+                            Yes, Cancel
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
         </Stack>
     );
 };

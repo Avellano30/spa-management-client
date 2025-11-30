@@ -73,12 +73,14 @@ export async function rescheduleAppointment(
 }
 
 // Cancel appointment
-export async function cancelAppointment(id: string): Promise<Appointment> {
-    const res = await fetch(`${endpoint}/appointment/${id}/cancel`, {
-        method: "PATCH",
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to cancel appointment");
-    return res.json();
+export async function cancelAppointment(id: string, notes: string): Promise<Appointment> {
+  const res = await fetch(`${endpoint}/appointment/${id}/cancel`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ notes }),
+  });
+  if (!res.ok) throw new Error((await res.json()).message || "Failed to cancel");
+  return res.json();
 }
 
 export const deleteAppointment = async (id: string) => {
