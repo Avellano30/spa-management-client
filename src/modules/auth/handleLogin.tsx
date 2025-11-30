@@ -63,6 +63,12 @@ export default function useHandleLogin() {
                 });
 
                 if (!response.ok) {
+                    if (response.status === 403) {
+                        const data = await response.json();
+                        navigate(data.redirect);
+                        return;
+                    }
+
                     notifications.show({
                         color: '#e50914',
                         title: 'Something went wrong with Google Auth',
