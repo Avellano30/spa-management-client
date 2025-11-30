@@ -146,7 +146,7 @@ export default function SignUp() {
                                     />
 
                                     {/* Password Strength */}
-                                    {password.length > 0 && (
+                                    {(passwordFocused || password.length > 0) && (
                                         <Box mt={8}>
                                             <Group align="center" justify="space-between">
                                                 <Text size="xs">Strength</Text>
@@ -157,7 +157,7 @@ export default function SignUp() {
                                     )}
 
                                     {/* Password Validation */}
-                                    {passwordFocused && (
+                                    {(passwordFocused || password.length > 0) && (
                                         <Stack mt={8}>
                                             {[
                                                 { label: "At least 8 characters", valid: checks.isLongEnough },
