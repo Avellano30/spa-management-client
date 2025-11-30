@@ -16,6 +16,10 @@ export const resendEmailVerification = async (email: string) => {
 };
 
 export const verifyEmail = async (token: string) => {
+    if (!token) {
+        throw new Error("Token is required for verification.");
+    }
+    
     const res = await fetch(`${endpoint}/verify-email/${token}`);
 
     if (!res.ok) {
