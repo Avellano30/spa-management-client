@@ -100,7 +100,7 @@ export default function SignUp() {
                 <div className={`max-w-[394px] w-full bg-white rounded-lg ${shake ? "shake" : ""}`}>
                     <div className="px-10 py-8 rounded-lg shadow-lg">
                         {/* Header */}
-                        <h2 className="text-[30px] font-bold text-center text-blue-600 mb-8">SPA</h2>
+                        <h2 className="text-[25px] font-bold text-center text-blue-600 mb-8">Serenity Spa</h2>
                         <h2 className="text-[17px] font-bold text-center">Create your account</h2>
                         <p className="text-[13px] mb-8 text-center">Welcome! Please fill in the details to get started</p>
 

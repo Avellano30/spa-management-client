@@ -25,7 +25,7 @@ export default function SignIn() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="max-w-[394px] w-full bg-white rounded-lg">
                     <div className="px-10 py-8 rounded-lg shadow-lg">
-                        <h2 className="text-[30px] font-bold text-center text-blue-600 mb-8">SPA</h2>
+                        <h2 className="text-[25px] font-bold text-center text-blue-600 mb-8">Serenity Spa</h2>
                         <h2 className="text-[17px] font-bold text-center">Login into your account</h2>
                         <p className="text-[13px] mb-8 text-center">Welcome back! Please sign in to continue</p>
                         <button
