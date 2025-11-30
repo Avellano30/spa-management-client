@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import {
     Accordion,
     Badge,
@@ -9,13 +9,11 @@ import {
     Loader,
     Text,
     Title,
-    Alert,
 } from "@mantine/core";
-import {IconInfoCircle} from "@tabler/icons-react";
-import {showNotification} from "@mantine/notifications";
-import {PaymentHistoryModal} from "../../components/PaymentHistoryModal";
-import {PaymentActions} from "../../components/PaymentActions";
-import {type Appointment, getClientAppointments} from "../../api/appointments";
+import { showNotification } from "@mantine/notifications";
+import { PaymentHistoryModal } from "../../components/PaymentHistoryModal";
+import { PaymentActions } from "../../components/PaymentActions";
+import { type Appointment, getClientAppointments } from "../../api/appointments";
 
 const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
@@ -81,7 +79,7 @@ export default function Appointments() {
     if (loading)
         return (
             <Group justify="center" py="xl">
-                <Loader/>
+                <Loader />
             </Group>
         );
 
@@ -136,8 +134,8 @@ export default function Appointments() {
                                         className="p-4 mb-3 bg-white hover:shadow-md transition-all"
                                     >
                                         <Flex
-                                            direction={{base: "column", sm: "row"}}
-                                            align={{base: "stretch", sm: "center"}}
+                                            direction={{ base: "column", sm: "row" }}
+                                            align={{ base: "stretch", sm: "center" }}
                                             justify="space-between"
                                             gap="md"
                                         >
@@ -161,21 +159,24 @@ export default function Appointments() {
 
                                                         <Group justify="space-between">
                                                             <Text fw={500} size="md">
-                                                                {formatTime(a.startTime)} –{" "}
-                                                                {formatTime(a.endTime)}
+                                                                {formatTime(a.startTime)} – {formatTime(a.endTime)}
                                                             </Text>
-                                                            <Text fw={500}>
-                                                                ₱{a.serviceId?.price.toFixed(2)}
-                                                            </Text>
+                                                            <Text fw={500}>₱{a.serviceId?.price.toFixed(2)}</Text>
                                                         </Group>
+
+                                                        {a.status === "Cancelled" && a.notes && (
+                                                            <Text size="sm" c="red" mt={4}>
+                                                                <strong>Cancellation Notes:</strong> {a.notes}
+                                                            </Text>
+                                                        )}
                                                     </>
                                                 ) : 'Appointment record is not available. Service has been deleted.'}
 
                                             </Flex>
 
                                             {/* Divider */}
-                                            <Divider orientation="vertical" visibleFrom="sm"/>
-                                            <Divider orientation="horizontal" hiddenFrom="sm"/>
+                                            <Divider orientation="vertical" visibleFrom="sm" />
+                                            <Divider orientation="horizontal" hiddenFrom="sm" />
 
                                             {/* RIGHT SECTION */}
                                             <Flex
@@ -188,7 +189,7 @@ export default function Appointments() {
                                                     appointment={a}
                                                     refresh={fetchAppointments}
                                                 />
-                                                <PaymentHistoryModal payments={a.payments ?? []}/>
+                                                <PaymentHistoryModal payments={a.payments ?? []} />
                                             </Flex>
                                         </Flex>
                                     </Card>

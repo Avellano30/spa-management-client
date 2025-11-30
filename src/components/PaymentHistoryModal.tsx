@@ -25,28 +25,28 @@ export const PaymentHistoryModal = ({ payments }: any) => {
             >
                 {payments.length ? (
                     <Table striped withTableBorder withColumnBorders>
-                        <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                        <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>Type</Table.Th>
+                            <Table.Th>Amount</Table.Th>
+                            <Table.Th>Status</Table.Th>
+                            <Table.Th>Date</Table.Th>
+                        </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
                         {payments.map((p: any) => (
-                            <tr key={p._id}>
-                                <td>{p.type}</td>
-                                <td>₱{p.amount.toFixed(2)}</td>
-                                <td>
+                            <Table.Tr key={p._id}>
+                                <Table.Td>{p.type}</Table.Td>
+                                <Table.Td>₱{p.amount.toFixed(2)}</Table.Td>
+                                <Table.Td>
                                     <Badge color={p.status === "Completed" ? "green" : "yellow"}>
                                         {p.status === "Completed" ? "PAID" : "PENDING"}
                                     </Badge>
-                                </td>
-                                <td>{new Date(p.createdAt).toLocaleString()}</td>
-                            </tr>
+                                </Table.Td>
+                                <Table.Td>{new Date(p.createdAt).toLocaleString()}</Table.Td>
+                            </Table.Tr>
                         ))}
-                        </tbody>
+                        </Table.Tbody>
                     </Table>
                 ) : (
                     <Text size="sm" c="dimmed">
