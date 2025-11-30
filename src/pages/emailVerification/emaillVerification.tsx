@@ -38,7 +38,7 @@ export default function EmailVerification() {
         if (status !== "success") return;
 
         const interval = setInterval(() => setSeconds((prev) => prev - 1), 1000);
-        const timeout = setTimeout(() => navigate("/sign-in"), 10000);
+        const timeout = setTimeout(() => navigate("/sign-in"), 5000);
 
         return () => {
             clearInterval(interval);
