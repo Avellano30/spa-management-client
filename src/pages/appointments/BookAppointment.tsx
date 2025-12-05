@@ -337,7 +337,7 @@ export default function BookAppointment() {
                                         placeholder="Pick a date"
                                         value={date}
                                         onChange={setDate}
-                                        minDate={new Date()}
+                                        minDate={new Date(Date.now() + 1*24*60*60*1000)} // min date is tomorrow
                                     />
                                     <TimePicker label="Select Time" value={time} onChange={setTime} format="12h"
                                                 withDropdown/>
