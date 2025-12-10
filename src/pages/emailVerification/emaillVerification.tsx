@@ -18,7 +18,6 @@ export default function EmailVerification() {
         const verify = async () => {
             try {
                 const response = await verifyEmail(token);
-                console.log(response);
                 setStatus("success");
             } catch (err: any) {
                 setStatus("error");

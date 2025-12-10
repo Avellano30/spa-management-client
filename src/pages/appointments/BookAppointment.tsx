@@ -141,7 +141,6 @@ export default function BookAppointment() {
                     notes,
                     isTemporary: true, // mark as temporary
                 });
-                console.log(appointment._id);
                 setTempAppointmentId(appointment._id);
             } catch (err: any) {
                 notifications.show({

@@ -97,6 +97,5 @@ export const confirmAppointment = async (id: string) => {
         },
         body: JSON.stringify({ isTemporary: false })
     });
-    console.log(res);
     return await res.json();
 };

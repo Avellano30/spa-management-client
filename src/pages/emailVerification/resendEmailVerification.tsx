@@ -7,7 +7,6 @@ import { resendEmailVerification } from "../../api/emailVerification";
 export default function ResendEmailVerification() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
-  console.log("Resend email for:", email);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
