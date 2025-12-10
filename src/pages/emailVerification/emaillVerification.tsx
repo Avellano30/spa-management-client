@@ -17,7 +17,7 @@ export default function EmailVerification() {
     useEffect(() => {
         const verify = async () => {
             try {
-                const response = await verifyEmail(token);
+                await verifyEmail(token);
                 setStatus("success");
             } catch (err: any) {
                 setStatus("error");
