@@ -34,7 +34,7 @@ export default function BookAppointment() {
     const [service, setService] = useState<Service | null>(null);
     const [active, setActive] = useState(0);
     const [date, setDate] = useState<string | null>(null);
-    const [time, setTime] = useState<string | undefined>(undefined);
+    const [time, setTime] = useState<string>("");
     const [notes, setNotes] = useState("");
     const [loading, setLoading] = useState(false);
     const [paymentType, setPaymentType] = useState<"Cash" | "Online">("Cash");
@@ -136,12 +136,13 @@ export default function BookAppointment() {
                 const appointment = await createAppointment({
                     clientId,
                     serviceId: service?._id!,
-                    date,
+                    date: date!,
                     startTime: time,
                     notes,
                     isTemporary: true, // mark as temporary
                 });
-                setTempAppointmentId(appointment.id);
+                console.log(appointment._id);
+                setTempAppointmentId(appointment._id);
             } catch (err: any) {
                 notifications.show({
                     title: "Error",
