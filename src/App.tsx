@@ -59,7 +59,7 @@ export default function AppLayout() {
 
                   {/* Minimal underline */}
                   {isActive && (
-                    <span className="absolute left-0 right-0 -bottom-1 h-[2px] bg-gray-900 rounded-full"></span>
+                    <span className="absolute left-0 right-0 -bottom-1 h-0.5 bg-gray-900 rounded-full"></span>
                   )}
                 </button>
               );
@@ -145,7 +145,7 @@ export default function AppLayout() {
           {!authState ? (
             <Group justify="center" grow pb="xl" px="md">
               <Button variant="default" onClick={() => navigate("/sign-in")}>Log in</Button>
-              <Button className="!bg-blue-600 hover:!bg-blue-700 text-white" onClick={() => navigate("/sign-up")}>
+              <Button className="bg-blue-600! hover:bg-blue-700! text-white" onClick={() => navigate("/sign-up")}>
                 Sign up
               </Button>
             </Group>

@@ -1,9 +1,8 @@
-import { useSearchParams, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { Loader, Center, Text } from "@mantine/core";
 
 export default function PaymentSuccess() {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
 
   useEffect(() => {
