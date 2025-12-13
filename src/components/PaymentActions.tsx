@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {
     Button,
     Group,
@@ -15,6 +15,7 @@ import {
     rescheduleAppointment,
 } from "../api/appointments";
 import { createOnlinePayment, getNextPaymentType } from "../api/payment";
+import {getSpaSettings, type SpaSettings} from "../api/settings";
 
 export const PaymentActions = ({ appointment, refresh }: any) => {
     const [loading, setLoading] = useState(false);
@@ -23,6 +24,15 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const [newDate, setNewDate] = useState<string | null>(null);
     const [newTime, setNewTime] = useState<string | undefined>(undefined);
     const [newNotes, setNewNotes] = useState("");
+
+    const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
+
+    // Fetch SpaSettings to get downpayment percentage
+    useEffect(() => {
+        getSpaSettings()
+            .then(setSpaSettings)
+            .catch(console.error);
+    }, []);
 
     const nextType = getNextPaymentType(appointment.payments);
 
@@ -33,7 +43,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     const servicePrice = appointment.serviceId?.price || 0
     const remaining = Math.max(servicePrice - totalPaid, 0);
-    const downpaymentAmount = servicePrice * 0.3;
+    const downpaymentPercent = spaSettings?.downPayment ?? 30;
+    const downpaymentAmount = servicePrice * (downpaymentPercent / 100);
 
     // --- Time Validation (for reschedule) ---
     const appointmentStart = new Date(appointment.date);

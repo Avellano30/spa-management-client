@@ -19,6 +19,23 @@ export interface HomepageSettings {
     updatedAt: Date;
 }
 
+export interface SpaSettings {
+    _id?: string;
+    totalRooms: number;
+    downPayment: number;
+    openingTime: string;
+    closingTime: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export async function getSpaSettings(): Promise<SpaSettings | null> {
+    const res = await fetch(`${endpoint}/settings`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch spa settings');
+    return res.json();
+}
+
 // Fetch homepage settings (JSON)
 export async function getHomepageSettings(): Promise<HomepageSettings | null> {
     const res = await fetch(`${endpoint}/homepage-settings`);

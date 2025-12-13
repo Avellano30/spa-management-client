@@ -23,6 +23,7 @@ import {notifications} from "@mantine/notifications";
 import {getAllServices, type Service} from "../../api/services";
 import {confirmAppointment, createAppointment, deleteAppointment} from "../../api/appointments";
 import {createOnlinePayment} from "../../api/payment";
+import {getSpaSettings, type SpaSettings} from "../../api/settings";
 
 interface DecodedToken {
     userId: string;
@@ -46,7 +47,16 @@ export default function BookAppointment() {
     const [termsAgreed, setTermsAgreed] = useState(false); // final persisted agreement
     const [termsChecked, setTermsChecked] = useState(false); // temporary checkbox in modal
 
+    const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
+    const downPaymentPercent = spaSettings?.downPayment ?? 30;
+
     const navigate = useNavigate();
+
+    useEffect(() => {
+        getSpaSettings()
+            .then(setSpaSettings)
+            .catch(console.error);
+    }, []);
 
     useEffect(() => {
         if (!serviceId) return;
@@ -239,9 +249,9 @@ export default function BookAppointment() {
                 <ScrollArea h={300} className="border border-gray-300 p-4 rounded-xl">
                     <Text size="sm" c="dimmed">
                         <strong>Booking Policy:</strong><br/>
-                        • A <strong>30% downpayment</strong> is required to confirm your booking.<br/>
+                        • A <strong>{downPaymentPercent}% downpayment</strong> is required to confirm your booking.<br/>
                         • The downpayment is <strong>non-refundable</strong>.<br/>
-                        • Remaining <strong>70% balance</strong> must be paid before or on the day of the appointment.<br/>
+                        • Remaining <strong>{100 - downPaymentPercent}% balance</strong> must be paid before or on the day of the appointment.<br/>
                         • All appointments are subject to availability and are considered confirmed only after downpayment is received.<br/>
                         • Clients are responsible for ensuring their contact information is accurate for booking confirmation and notifications.<br/><br/>
 
@@ -370,7 +380,7 @@ export default function BookAppointment() {
                                             onChange={(v) => setPaymentMode(v as "Full" | "Downpayment")}
                                             data={[
                                                 {label: "Full Payment", value: "Full"},
-                                                {label: "Downpayment (30%)", value: "Downpayment"},
+                                                {label: `Downpayment (${downPaymentPercent}%)`, value: "Downpayment"},
                                             ]}
                                         />
                                     )}
