@@ -5,6 +5,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
 import { rem } from "@mantine/core";
+import LogRocket from "logrocket";
 
 const domain = import.meta.env.VITE_DOMAIN;
 
@@ -41,6 +42,11 @@ export default function useHandleLogin() {
             const session = await response.json();
 
             setAuthState({ firstName: session.firstName, lastName: session.lastName, email: session.email });
+
+            LogRocket.identify(session.userId, {
+                name: `${session.firstName} ${session.lastName}`,
+                email: session.email,
+            });
 
             localStorage.setItem("session", session.token);
 
@@ -89,6 +95,11 @@ export default function useHandleLogin() {
 
                 setAuthState({ firstName: tokens.firstName, lastName: tokens.lastName, email: tokens.email });
                 localStorage.setItem('session', tokens.token);
+
+                LogRocket.identify(tokens.userId, {
+                    name: `${tokens.firstName} ${tokens.lastName}`,
+                    email: tokens.email,
+                });
 
                 navigate(redirect || "/my-appointments");
             } catch (error) {

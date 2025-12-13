@@ -19,6 +19,9 @@ import '@mantine/code-highlight/styles.css';
 import { AuthProvider } from './utils/AuthContext';
 import PrivateRoutes from './utils/PrivateRouter';
 
+// User Log Activity
+import LogRocket from "logrocket";
+
 //Routes
 import AppLayout from './App';
 import SignIn from "./pages/auth/SignIn.tsx";
@@ -65,6 +68,8 @@ const theme = createTheme({
     /** Put your mantine theme override here */
     // fontFamily: 'Inter, sans-serif',
 });
+
+LogRocket.init("rlg94d/appointment-system");
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENT_ID}>
