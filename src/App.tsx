@@ -29,6 +29,7 @@ export default function AppLayout() {
     const navLinks = [
         {label: "Home", path: "/"},
         {label: "Services", path: "/services"},
+        {label: "Contact Us", path: "/contact-us"},
         {label: "About", path: "/about"},
     ];
 
