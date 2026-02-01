@@ -38,7 +38,6 @@ import RequestReset from './pages/passwordReset/requestReset.tsx';
 import ResetPasswordPage from './pages/passwordReset/resetPassword.tsx';
 import ResendEmailVerification from './pages/emailVerification/resendEmailVerification.tsx';
 import EmailVerification from './pages/emailVerification/emaillVerification.tsx';
-import AppContactUs from './pages/app/ContactUs.tsx';
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -49,7 +48,6 @@ const router = createBrowserRouter(
                 <Route path='/' element={<AppHome />} />
                 <Route path='/about' element={<AppAbout />} />
                 <Route path='/services' element={<AppServices />} />
-                <Route path='/contact-us' element={<AppContactUs />} />
             </Route>
             <Route element={<PrivateRoutes />}>
                 <Route path='/my-appointments' element={<Appointments />} />
