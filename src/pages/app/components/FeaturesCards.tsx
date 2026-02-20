@@ -25,11 +25,12 @@ const data = [
         icon: IconLeaf,
     },
     {
-        title: 'Holistic Wellness',
+        title: 'Essential Oils',
         description:
-            'Our expert therapists combine ancient healing traditions with modern techniques to address your mind, body, and spirit for complete wellness and relaxation.',
+            'Our spa offers essential oils such as Sweet almond oil, Virgin coconut oil, and Grapeseed oil. ',
         icon: IconFlower,
-    },
+    }
+
 ];
 
 export function FeaturesCards() {
