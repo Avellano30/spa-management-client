@@ -27,7 +27,7 @@ import {
   createAppointment,
   deleteAppointment,
 } from "../../api/appointments";
-import { createOnlinePayment, createPaymongoPayment } from "../../api/payment";
+import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
 
 interface DecodedToken {

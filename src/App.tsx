@@ -186,7 +186,7 @@ export default function AppLayout() {
 
             <Divider my="sm" />
 
-            <Group position="center" pb="md">
+            <Group pb="md">
               <ThemeToggle />
             </Group>
 

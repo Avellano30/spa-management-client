@@ -13,7 +13,7 @@ import {
 } from "react-router";
 
 // Mantine
-import { createTheme, MantineProvider } from "@mantine/core";
+import { createTheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
@@ -69,11 +69,6 @@ const router = createBrowserRouter(
     </>,
   ),
 );
-
-const theme = createTheme({
-  /** Put your mantine theme override here */
-  // fontFamily: 'Inter, sans-serif',
-});
 
 LogRocket.init("rlg94d/appointment-system");
 

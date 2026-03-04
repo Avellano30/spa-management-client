@@ -38,7 +38,6 @@ export default function ThemeProvider({ children }: Props) {
       document.documentElement.classList.toggle("dark", colorScheme === "dark");
 
       const html = document.documentElement;
-      const current = html.getAttribute("data-mantine-color-scheme");
       html.setAttribute("data-mantine-color-scheme", colorScheme);
     }
   }, [colorScheme]);
@@ -48,13 +47,7 @@ export default function ThemeProvider({ children }: Props) {
 
   return (
     <ThemeContext.Provider value={{ colorScheme, toggleColorScheme }}>
-      <MantineProvider
-        theme={{ colorScheme }}
-        withGlobalStyles
-        withNormalizeCSS
-      >
-        {children}
-      </MantineProvider>
+      <MantineProvider>{children}</MantineProvider>
     </ThemeContext.Provider>
   );
 }

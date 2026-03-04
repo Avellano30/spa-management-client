@@ -1,4 +1,3 @@
-import React from "react";
 import { ActionIcon, Tooltip } from "@mantine/core";
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import { useTheme } from "../utils/ThemeProvider";

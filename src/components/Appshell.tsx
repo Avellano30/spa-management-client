@@ -15,7 +15,6 @@ import {
   IconCalendarWeek,
 } from "@tabler/icons-react";
 import React from "react";
-import ThemeToggle from "./ThemeToggle";
 import useHandleLogout from "../modules/auth/handleLogout";
 import { useLocation } from "react-router";
 import { useAuth } from "../utils/AuthContext";
@@ -43,8 +42,6 @@ function Layout({ children }: { children: React.ReactNode }) {
       leftSection={<item.icon size={16} stroke={1.5} />}
     />
   ));
-
-  const theme = useMantineTheme();
 
   return (
     <AppShell
