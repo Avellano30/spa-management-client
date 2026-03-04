@@ -12,8 +12,6 @@ import {
   RouterProvider,
 } from "react-router";
 
-// Mantine
-import { createTheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";

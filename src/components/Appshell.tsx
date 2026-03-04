@@ -5,7 +5,6 @@ import {
   ScrollArea,
   NavLink,
   Divider,
-  useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
