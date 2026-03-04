@@ -15,7 +15,7 @@ export interface Payment {
 
 export const createOnlinePayment = async (
   appointmentId: string,
-  type: "Full" | "Downpayment" | "Balance"
+  type: "Full" | "Downpayment" | "Balance",
 ) => {
   const res = await fetch(`${endpoint}/payment/online`, {
     method: "POST",
@@ -33,11 +33,33 @@ export const createOnlinePayment = async (
   return res.json();
 };
 
+export const createPaymongoPayment = async (
+  appointmentId: string,
+  type: "Full" | "Downpayment" | "Balance",
+) => {
+  const res = await fetch(`${endpoint}/payment/paymongo`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ appointmentId, type }),
+  });
+
+  const data = await res.json();
+
+  if (!data.checkout_url) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to create online payment session");
+  }
+
+  return data.checkout_url;
+};
+
 export const createCashPayment = async (
   appointmentId: string,
   type: "Full" | "Downpayment" | "Balance" | "Refund",
   amount: number,
-  remarks?: string
+  remarks?: string,
 ) => {
   const res = await fetch(`${endpoint}/payment/cash`, {
     method: "POST",
@@ -60,11 +82,14 @@ export const createCashPayment = async (
   return res.json();
 };
 
-export function getNextPaymentType(payments: Payment[]): "Downpayment" | "Balance" | "Full" | null {
+export function getNextPaymentType(
+  payments: Payment[],
+): "Downpayment" | "Balance" | "Full" | null {
   if (!payments?.length) return "Balance";
   const last = payments[payments.length - 1];
 
-  if (last.type === "Downpayment" && last.status === "Completed") return "Balance";
+  if (last.type === "Downpayment" && last.status === "Completed")
+    return "Balance";
   if (last.type === "Full" || last.type === "Balance") return null;
 
   // if the last one is still pending, block further payments
