@@ -43,7 +43,7 @@ export default function SignIn() {
               variant="default"
               type="button"
               leftSection={<FcGoogle size={18} />}
-              className="w-full! py-1.5 px-3 border border-black! rounded-md font-semibold text-gray-800! text-[13px] hover:drop-shadow-md"
+              className="w-full! py-1.5 px-3 border border-black! rounded-md font-semibold text-[13px] hover:drop-shadow-md"
               onClick={() => login()}
               data-testid="google-login-button"
             >

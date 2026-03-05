@@ -17,11 +17,13 @@ import {
   Modal,
   Checkbox,
   ScrollArea,
+  Select,
 } from "@mantine/core";
 import { jwtDecode } from "jwt-decode";
 import { DateInput, TimePicker } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { getAllServices, type Service } from "../../api/services";
+import { getAllEmployees } from "../../api/employees";
 import {
   confirmAppointment,
   createAppointment,
@@ -59,10 +61,27 @@ export default function BookAppointment() {
   const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
   const downPaymentPercent = spaSettings?.downPayment ?? 30;
 
+  const [employees, setEmployees] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     getSpaSettings().then(setSpaSettings).catch(console.error);
+
+    getAllEmployees()
+      .then((data) => {
+        const options = data
+          .filter((emp: any) => emp.status === "available")
+          .map((emp: any) => ({
+            label: emp.name,
+            value: emp.name,
+          }));
+        setEmployees(options);
+      })
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -158,7 +177,8 @@ export default function BookAppointment() {
           date: date!,
           startTime: time,
           notes,
-          isTemporary: true, // mark as temporary
+          isTemporary: true,
+          employee: selectedEmployee ?? "",
         });
         setTempAppointmentId(appointment._id);
       } catch (err: any) {
@@ -418,6 +438,16 @@ export default function BookAppointment() {
                     onChange={setTime}
                     format="12h"
                     withDropdown
+                  />
+                </Group>
+
+                <Group grow mb="md">
+                  <Select
+                    label="Massage Therapist"
+                    value={selectedEmployee}
+                    onChange={setSelectedEmployee}
+                    data={employees}
+                    placeholder="Select therapist"
                   />
                 </Group>
               </Stepper.Step>
