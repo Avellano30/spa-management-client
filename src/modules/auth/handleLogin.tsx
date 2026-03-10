@@ -50,7 +50,7 @@ export default function useHandleLogin() {
 
             localStorage.setItem("session", session.token);
 
-            navigate(redirect || "/my-appointments");
+            navigate(redirect || "/");
         } catch (error) {
             console.error("There was a problem with the fetch operation:", error);
             setErrorMessage(true);
@@ -101,7 +101,7 @@ export default function useHandleLogin() {
                     email: tokens.email,
                 });
 
-                navigate(redirect || "/my-appointments");
+                navigate(redirect || "/");
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
