@@ -69,10 +69,12 @@ export default function BookAppointment() {
   const [availableBeds, setAvailableBeds] = useState<number>(0);
 
   useEffect(() => {
-    getSpaSettings().then((settings) => {
-      setSpaSettings(settings);
-      setAvailableBeds(settings?.totalRooms || 0);
-    }).catch(console.error);
+    getSpaSettings()
+      .then((settings) => {
+        setSpaSettings(settings);
+        setAvailableBeds(settings?.totalRooms || 0);
+      })
+      .catch(console.error);
 
     getAllEmployees().then((data) => {
       setEmployees(data);
