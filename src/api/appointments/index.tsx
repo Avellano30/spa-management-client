@@ -1,6 +1,7 @@
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import type { Service } from "../services";
 import type { Payment } from "../payment";
+import { refundAppointment } from "../payment";
 const endpoint = import.meta.env.VITE_ENDPOINT || "http://localhost:3000";
 
 interface DecodedToken extends JwtPayload {
@@ -29,6 +30,19 @@ export interface NewAppointment {
   notes?: string;
   isTemporary?: boolean;
   employee?: string;
+}
+
+export async function getAppointments(params?: {
+  status?: string;
+}): Promise<Appointment[]> {
+  const query = params?.status ? `?status=${params.status}` : "";
+  const res = await fetch(`${endpoint}/appointment${query}`);
+  if (!res.ok)
+    throw new Error(
+      (await res.json()).message || "Failed to fetch appointments",
+    );
+  const data = await res.json();
+  return data.appointments;
 }
 
 export const getClientId = (): string => {
@@ -97,7 +111,41 @@ export async function cancelAppointment(
   });
   if (!res.ok)
     throw new Error((await res.json()).message || "Failed to cancel");
-  return res.json();
+  const response = await res.json();
+  // Process refund via PayMongo if there are completed payments
+  if (
+    response.appointment.payments &&
+    response.appointment.payments.some((p: Payment) => p.status === "Completed")
+  ) {
+    try {
+      const payments: Payment[] = response.appointment.payments || [];
+
+      // Get completed payments
+      const completedPayments = payments.filter(
+        (p) => p.status === "Completed",
+      );
+
+      // Sum total payments
+      const total_payments = completedPayments.reduce(
+        (sum, p) => sum + p.amount,
+        0,
+      );
+
+      // Process refund
+      if (total_payments > 0) {
+        try {
+          await refundAppointment(id, total_payments, notes);
+        } catch (error) {
+          console.error("Failed to process refund:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to process refund:", error);
+      // Note: We don't throw here to avoid failing the cancellation
+    }
+  }
+
+  return response.appointment;
 }
 
 export const deleteAppointment = async (id: string) => {

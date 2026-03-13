@@ -95,3 +95,24 @@ export function getNextPaymentType(
   // if the last one is still pending, block further payments
   return null;
 }
+
+export const refundAppointment = async (
+  appointmentId: string,
+  amount: number,
+  reason: string,
+) => {
+  const res = await fetch(`${endpoint}/payment/refund/${appointmentId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ amount, reason }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to refund appointment");
+  }
+
+  return res.json();
+};

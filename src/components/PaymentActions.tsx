@@ -211,9 +211,9 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
           <Text size="sm">
             Are you sure you want to cancel your appointment?
           </Text>
-          <Text size="sm" c="red">
+          {/* <Text size="sm" c="red">
             ⚠️ Downpayments are <strong>non-refundable</strong>.
-          </Text>
+          </Text> */}
 
           <Group grow mt="md">
             <Button
@@ -289,9 +289,9 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
           <Text size="sm">
             Are you sure you want to cancel your appointment?
           </Text>
-          <Text size="sm" c="red">
+          {/* <Text size="sm" c="red">
             ⚠️ Downpayments are <strong>non-refundable</strong>.
-          </Text>
+          </Text> */}
 
           {/* --- Add Cancellation Notes --- */}
           <Textarea

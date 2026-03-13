@@ -17,7 +17,9 @@ import {
   Modal,
   Checkbox,
   ScrollArea,
-  Select,
+  Box,
+  Badge,
+  SimpleGrid,
 } from "@mantine/core";
 import { jwtDecode } from "jwt-decode";
 import { DateInput, TimePicker } from "@mantine/dates";
@@ -31,6 +33,8 @@ import {
 } from "../../api/appointments";
 import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
+import BookingCalendar from "../../components/BookingCalendar";
+import dayjs from "dayjs";
 
 interface DecodedToken {
   userId: string;
@@ -61,28 +65,32 @@ export default function BookAppointment() {
   const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
   const downPaymentPercent = spaSettings?.downPayment ?? 30;
 
-  const [employees, setEmployees] = useState<
-    { label: string; value: string }[]
-  >([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
-
-  const navigate = useNavigate();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [availableBeds, setAvailableBeds] = useState<number>(0);
 
   useEffect(() => {
-    getSpaSettings().then(setSpaSettings).catch(console.error);
+    getSpaSettings().then((settings) => {
+      setSpaSettings(settings);
+      setAvailableBeds(settings?.totalRooms || 0);
+    }).catch(console.error);
 
-    getAllEmployees()
-      .then((data) => {
-        const options = data
-          .filter((emp: any) => emp.status === "available")
-          .map((emp: any) => ({
-            label: emp.name,
-            value: emp.name,
-          }));
-        setEmployees(options);
-      })
-      .catch(console.error);
+    getAllEmployees().then((data) => {
+      setEmployees(data);
+    });
   }, []);
+
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+
+  function isEmployeeAvailable(emp: any, selectedDate: string | null) {
+    if (!selectedDate) return true; // Show as available when no date selected
+    const dayOfWeek = dayjs(selectedDate).format("dddd").toLowerCase(); // "monday"
+    if (!emp.schedule) return false;
+    return emp.schedule.some((d: string) =>
+      d.toLowerCase().includes(dayOfWeek),
+    );
+  }
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!serviceId) return;
@@ -377,7 +385,7 @@ export default function BookAppointment() {
       </Modal>
 
       <Container size="lg" className="py-1">
-        <div className="flex flex-col md:flex-row gap-10">
+        <div className="flex flex-col md:flex-col gap-10">
           {/* --- Service Info --- */}
           <Card
             shadow="md"
@@ -409,8 +417,8 @@ export default function BookAppointment() {
 
           {/* --- Booking Stepper --- */}
           <Card
-            shadow="md"
-            radius="md"
+            shadow="lg"
+            radius="lg"
             withBorder
             className="flex-1 bg-white/80 backdrop-blur-sm relative"
           >
@@ -423,32 +431,142 @@ export default function BookAppointment() {
               onStepClick={setActive}
               allowNextStepsSelect={false}
             >
-              <Stepper.Step label="Select Date & Time">
+              <Stepper.Step label="Select Availability">
                 <Group grow mb="md">
-                  <DateInput
-                    label="Select Date"
-                    placeholder="Pick a date"
-                    value={date}
-                    onChange={setDate}
-                    minDate={new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)} // min date is tomorrow
-                  />
-                  <TimePicker
-                    label="Select Time"
-                    value={time}
-                    onChange={setTime}
-                    format="12h"
-                    withDropdown
-                  />
+                  <Group grow mb="md">
+                    <DateInput
+                      label="Select Date"
+                      placeholder="Pick a date"
+                      value={date}
+                      onChange={setDate}
+                      minDate={new Date()} // min date is today
+                    />
+                    <TimePicker
+                      label="Select Time"
+                      value={time}
+                      onChange={setTime}
+                      format="12h"
+                      withDropdown
+                    />
+                  </Group>
                 </Group>
 
+                <BookingCalendar
+                  employee={employees.find((e) => e._id === selectedEmployee)}
+                  onDateSelect={(selectedDate) => setDate(selectedDate)}
+                  onAvailabilityChange={setAvailableBeds}
+                />
+
                 <Group grow mb="md">
-                  <Select
-                    label="Massage Therapist"
-                    value={selectedEmployee}
-                    onChange={setSelectedEmployee}
-                    data={employees}
-                    placeholder="Select therapist"
-                  />
+                  <Box mb="md">
+                    <Text fw={600} mb="xs">
+                      Massage Therapist
+                    </Text>
+                    <SimpleGrid cols={4} spacing="md">
+                      {employees.map((emp, index) => {
+                        const statusUnavailable = emp.status === "unavailable";
+                        const scheduleAvailable = date
+                          ? isEmployeeAvailable(emp, date)
+                          : true;
+
+                        const canClick =
+                          !statusUnavailable && scheduleAvailable;
+
+                        return (
+                          <Card
+                            key={`${emp._id}-${index}`}
+                            shadow={selectedEmployee === emp._id ? "lg" : "sm"}
+                            radius="md"
+                            withBorder
+                            style={{
+                              cursor: statusUnavailable
+                                ? "not-allowed"
+                                : "pointer",
+                              opacity: canClick ? 1 : 0.5,
+                              borderColor:
+                                selectedEmployee === emp._id
+                                  ? "green"
+                                  : undefined,
+                            }}
+                            onClick={() => {
+                              // ❌ Completely disabled if employee status unavailable
+                              if (statusUnavailable) return;
+
+                              // ⚠️ Available employee but not scheduled that day
+                              if (date && !scheduleAvailable) {
+                                notifications.show({
+                                  title: "Unavailable",
+                                  message: `${emp.name} does not work on ${dayjs(
+                                    date,
+                                  ).format("dddd, MMMM D")}`,
+                                  color: "yellow",
+                                });
+                                return;
+                              }
+
+                              // ✅ Select employee
+                              setSelectedEmployee(emp._id);
+                            }}
+                          >
+                            <Box
+                              style={{
+                                width: "100%",
+                                aspectRatio: "1 / 1",
+                                overflow: "hidden",
+                                borderRadius: 8,
+                              }}
+                            >
+                              <Image
+                                src={emp.imageUrl || "/img/placeholder.jpg"}
+                                alt={emp.name}
+                                fit="cover"
+                                height="100%"
+                                width="100%"
+                              />
+                            </Box>
+
+                            <Text ta="center" size="sm" fw={500}>
+                              {emp.name}
+                            </Text>
+
+                            <Badge
+                              color={
+                                statusUnavailable
+                                  ? "gray"
+                                  : scheduleAvailable
+                                    ? "green"
+                                    : "red"
+                              }
+                              size="sm"
+                              mt="xs"
+                              fullWidth
+                            >
+                              {statusUnavailable
+                                ? "Unavailable"
+                                : scheduleAvailable
+                                  ? "Available"
+                                  : "Unavailable"}
+                            </Badge>
+                          </Card>
+                        );
+                      })}
+                    </SimpleGrid>
+                    <Box mt="md">
+                      <Text fw={600} mb="xs" ta="center">
+                        Available Beds
+                      </Text>
+
+                      <Text
+                        size="48px"
+                        fw={700}
+                        ta="center"
+                        c="green"
+                        style={{ lineHeight: 1 }}
+                      >
+                        {availableBeds}
+                      </Text>
+                    </Box>
+                  </Box>
                 </Group>
               </Stepper.Step>
 

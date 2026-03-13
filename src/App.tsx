@@ -64,7 +64,7 @@ export default function AppLayout() {
             >
               <img
                 src={homepageSettings?.brand.logoUrl}
-                className="w-8 h-8"
+                className="w-14 h-14"
                 alt=""
               />
               <span className="hidden sm:block font-semibold text-lg">
