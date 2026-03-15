@@ -1,6 +1,7 @@
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import type { Service } from "../services";
 import type { Payment } from "../payment";
+import type { Employee } from "../employees";
 import { refundAppointment } from "../payment";
 const endpoint = import.meta.env.VITE_ENDPOINT || "http://localhost:3000";
 
@@ -11,7 +12,11 @@ interface DecodedToken extends JwtPayload {
 export interface Appointment {
   _id: string;
   clientId: string;
-  serviceId: Service & { price: number };
+  services: {
+    serviceId: string;
+    intensity?: string;
+    service: Service & { price: number };
+  }[];
   date: string;
   startTime: string;
   endTime: string;
@@ -19,12 +24,12 @@ export interface Appointment {
   notes?: string;
   isTemporary?: boolean;
   payments?: Payment[];
-  employee?: string;
+  employee?: Employee;
 }
 
 export interface NewAppointment {
   clientId: string;
-  serviceId: string;
+  services: { serviceId: string; intensity?: string }[];
   date: string;
   startTime: string;
   notes?: string;

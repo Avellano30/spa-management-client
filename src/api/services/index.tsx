@@ -1,4 +1,4 @@
-const endpoint = import.meta.env.VITE_ENDPOINT || 'http://localhost:3000';
+const endpoint = import.meta.env.VITE_ENDPOINT || "http://localhost:3000";
 
 export interface Service {
   _id: string;
@@ -9,7 +9,8 @@ export interface Service {
   category: string;
   imageUrl: string;
   imagePublicId: string;
-  status: 'available' | 'unavailable';
+  status: "available" | "unavailable";
+  intensity?: string;
 }
 
 export async function getAllServices(): Promise<Service[]> {

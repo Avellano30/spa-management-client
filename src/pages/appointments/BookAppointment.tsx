@@ -20,6 +20,7 @@ import {
   Box,
   Badge,
   SimpleGrid,
+  Select,
 } from "@mantine/core";
 import { jwtDecode } from "jwt-decode";
 import { DateInput, TimePicker } from "@mantine/dates";
@@ -30,20 +31,29 @@ import {
   confirmAppointment,
   createAppointment,
   deleteAppointment,
+  getClientId,
 } from "../../api/appointments";
 import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
 import BookingCalendar from "../../components/BookingCalendar";
 import dayjs from "dayjs";
+import { getAppointments } from "../../api/appointments";
 
 interface DecodedToken {
   userId: string;
 }
 
+interface SelectedService {
+  service: Service;
+  intensity?: string;
+}
+
 export default function BookAppointment() {
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("serviceId");
-  const [service, setService] = useState<Service | null>(null);
+  const intensityParam = searchParams.get("intensity");
+  const [services, setServices] = useState<SelectedService[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
   const [active, setActive] = useState(0);
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string>("");
@@ -53,14 +63,19 @@ export default function BookAppointment() {
   const [paymentMode, setPaymentMode] = useState<"Full" | "Downpayment">(
     "Full",
   );
-  const [tempAppointmentId, setTempAppointmentId] = useState<string | null>(
-    null,
-  );
+  const [tempAppointmentIds, setTempAppointmentIds] = useState<string[]>([]);
 
   // Terms modal state
   const [termsOpened, setTermsOpened] = useState(false);
   const [termsAgreed, setTermsAgreed] = useState(false); // final persisted agreement
   const [termsChecked, setTermsChecked] = useState(false); // temporary checkbox in modal
+
+  // Intensity selection modal
+  const [intensityModal, setIntensityModal] = useState<{
+    service: Service;
+    onSelect: (intensity: string) => void;
+    isUpdate: boolean;
+  } | null>(null);
 
   const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
   const downPaymentPercent = spaSettings?.downPayment ?? 30;
@@ -79,6 +94,51 @@ export default function BookAppointment() {
     getAllEmployees().then((data) => {
       setEmployees(data);
     });
+
+    getAllServices().then((data) => {
+      setAllServices(data);
+      if (serviceId) {
+        const selectedService = data.find((s) => s._id === serviceId);
+        if (selectedService) {
+          setServices([
+            {
+              service: selectedService,
+              intensity: intensityParam || undefined,
+            },
+          ]);
+        }
+      }
+    });
+  }, [serviceId]);
+
+  useEffect(() => {
+    async function updateBeds() {
+      if (!date) return;
+      try {
+        const data = await getAppointments({ status: "Approved" });
+        const eventsOnDate = data.filter(
+          (item) => item.date.split("T")[0] === date,
+        ).length;
+        const totalRooms = spaSettings?.totalRooms || 0;
+        setAvailableBeds(totalRooms - eventsOnDate);
+      } catch {
+        setAvailableBeds(0);
+      }
+    }
+    updateBeds();
+  }, [date, spaSettings]);
+
+  useEffect(() => {
+    const agreed = localStorage.getItem("termsAgreed");
+    if (agreed === "true") {
+      setTermsAgreed(true);
+      setTermsChecked(false); // no need to check the box automatically
+    } else {
+      setTermsAgreed(false);
+      setTermsChecked(false);
+      // Show modal so user can agree (optional - only show if they haven't agreed)
+      setTermsOpened(true);
+    }
   }, []);
 
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
@@ -93,26 +153,6 @@ export default function BookAppointment() {
   }
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!serviceId) return;
-    getAllServices()
-      .then((data) => setService(data.find((s) => s._id === serviceId) || null))
-      .catch(console.error);
-  }, [serviceId]);
-
-  useEffect(() => {
-    const agreed = localStorage.getItem("termsAgreed");
-    if (agreed === "true") {
-      setTermsAgreed(true);
-      setTermsChecked(false); // no need to check the box automatically
-    } else {
-      setTermsAgreed(false);
-      setTermsChecked(false);
-      // Show modal so user can agree (optional - only show if they haven't agreed)
-      setTermsOpened(true);
-    }
-  }, []);
 
   const openTermsModal = () => {
     // Reset temporary checkbox whenever modal opens so they must actively check it and press Continue
@@ -160,7 +200,15 @@ export default function BookAppointment() {
       });
     }
 
-    if (active === 0 && (!date || !time)) {
+    if (active === 0 && services.length === 0) {
+      return notifications.show({
+        title: "No Services Selected",
+        message: "Please select at least one service before continuing.",
+        color: "yellow",
+      });
+    }
+
+    if (active === 1 && (!date || !time)) {
       return notifications.show({
         title: "Incomplete Details",
         message: "Please select a date and time before continuing.",
@@ -168,8 +216,8 @@ export default function BookAppointment() {
       });
     }
 
-    // Create temporary appointment when moving from step 1 → 2
-    if (active === 1 && !tempAppointmentId) {
+    // Create temporary appointments when moving from step 1 → 2
+    if (active === 1 && tempAppointmentIds.length === 0) {
       const sessionToken = localStorage.getItem("session");
       if (!sessionToken)
         return navigate(
@@ -183,18 +231,21 @@ export default function BookAppointment() {
         setLoading(true);
         const appointment = await createAppointment({
           clientId,
-          serviceId: service?._id!,
+          services: services.map((selected) => ({
+            serviceId: selected.service._id,
+            intensity: selected.intensity,
+          })),
           date: date!,
           startTime: time,
           notes,
           isTemporary: true,
           employee: selectedEmployee ?? "",
         });
-        setTempAppointmentId(appointment._id);
+        setTempAppointmentIds([appointment._id]);
       } catch (err: any) {
         notifications.show({
           title: "Error",
-          message: err.message || "Could not create temporary booking.",
+          message: err.message || "Could not create temporary bookings.",
           color: "red",
         });
         return; // stop progression
@@ -207,54 +258,52 @@ export default function BookAppointment() {
   };
 
   const handleBack = async () => {
-    // If going back from Step 3 → 2, delete temp appointment
-    if (active === 2 && tempAppointmentId) {
+    // If going back from Step 3 → 2, delete temp appointments
+    if (active === 2 && tempAppointmentIds.length > 0) {
       try {
-        await deleteAppointment(tempAppointmentId);
-        setTempAppointmentId(null);
+        await Promise.all(
+          tempAppointmentIds.map((id) => deleteAppointment(id)),
+        );
+        setTempAppointmentIds([]);
       } catch (err) {
-        console.warn("Failed to delete temp appointment", err);
+        console.warn("Failed to delete temp appointments", err);
       }
     }
     setActive((prev) => prev - 1);
   };
 
   const handleSubmit = async () => {
-    if (!service || !date || !time) return;
+    if (services.length === 0 || !date || !time) return;
 
     try {
       setLoading(true);
 
-      // Use tempAppointmentId if it exists, otherwise create final one
-      let appointmentId = tempAppointmentId;
-      if (!appointmentId) {
-        const sessionToken = localStorage.getItem("session");
-        if (!sessionToken)
-          return navigate(
-            `/sign-in?redirect=/book-appointment?serviceId=${serviceId}`,
-          );
-
-        const decoded = jwtDecode<DecodedToken>(sessionToken);
-        const clientId = decoded.userId;
-
+      // Use tempAppointmentIds if they exist, otherwise create final appointment
+      let appointmentIds = tempAppointmentIds;
+      if (appointmentIds.length === 0) {
         const appointment = await createAppointment({
-          clientId,
-          serviceId: service._id,
+          clientId: getClientId(),
+          services: services.map((selected) => ({
+            serviceId: selected.service._id,
+            intensity: selected.intensity,
+          })),
           date,
           startTime: time,
           notes,
         });
-        appointmentId = appointment._id;
+        appointmentIds = [appointment._id];
       }
 
       if (paymentType === "Online") {
-        const url = await createPaymongoPayment(appointmentId, paymentMode);
+        // For multiple services, we might need to handle payment differently
+        // For now, let's use the first appointment for payment
+        const url = await createPaymongoPayment(appointmentIds[0], paymentMode);
         window.location.href = url;
       } else {
-        await confirmAppointment(appointmentId);
+        await Promise.all(appointmentIds.map((id) => confirmAppointment(id)));
         notifications.show({
-          title: "Appointment Booked!",
-          message: "Your booking has been saved. Please pay on site.",
+          title: "Appointments Booked!",
+          message: "Your bookings have been saved. Please pay on site.",
           color: "green",
         });
         navigate("/my-appointments");
@@ -270,7 +319,7 @@ export default function BookAppointment() {
     }
   };
 
-  if (!service) {
+  if (services.length === 0) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <Loader size="lg" />
@@ -386,35 +435,128 @@ export default function BookAppointment() {
         </Button>
       </Modal>
 
+      {/* --- Intensity Selection Modal --- */}
+      <Modal
+        opened={!!intensityModal}
+        onClose={() => setIntensityModal(null)}
+        title={`${intensityModal?.isUpdate ? "Update" : "Select"} Intensity for ${intensityModal?.service.name}`}
+        size="sm"
+      >
+        <Select
+          label="Intensity"
+          placeholder="Choose intensity"
+          data={
+            intensityModal?.service.intensity
+              ? intensityModal.service.intensity
+                  .split(",")
+                  .map((int) => int.trim())
+                  .filter((int) => int)
+                  .map((int) => ({
+                    value: int,
+                    label: int,
+                  }))
+              : []
+          }
+          onChange={(value) => {
+            if (value && intensityModal) {
+              intensityModal.onSelect(value);
+            }
+          }}
+        />
+      </Modal>
+
       <Container size="lg" className="py-1">
         <div className="flex flex-col md:flex-col gap-10">
-          {/* --- Service Info --- */}
+          {/* --- Selected Services Info --- */}
           <Card
             shadow="md"
             radius="md"
             withBorder
             className="flex-1 overflow-hidden bg-white/80 backdrop-blur-sm"
           >
-            <Image
-              src={service.imageUrl || "/img/placeholder.jpg"}
-              height={250}
-              fit="contain"
-              alt={service.name}
-              className="rounded-t-md max-h-[300px] mx-auto"
-            />
-            <div className="p-5">
-              <Title order={3}>{service.name}</Title>
-              <Text size="sm" c="dimmed" mt={4}>
-                {service.description}
+            <Title order={4} mb="md">
+              Selected Services
+            </Title>
+            <ScrollArea h={300}>
+              <SimpleGrid cols={2} spacing="md">
+                {services.map((selected) => (
+                  <Card
+                    key={selected.service._id}
+                    withBorder
+                    radius="md"
+                    mb="sm"
+                  >
+                    <Group>
+                      <div
+                        style={{
+                          height: 60,
+                          width: 60,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Image
+                          src={
+                            selected.service.imageUrl || "/img/placeholder.jpg"
+                          }
+                          height="100%"
+                          width="100%"
+                          fit="contain"
+                          alt={selected.service.name}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text fw={500}>{selected.service.name}</Text>
+                        {selected.intensity && (
+                          <Text size="sm" c="blue">
+                            Intensity: {selected.intensity}
+                          </Text>
+                        )}
+                        <Text size="sm" c="dimmed">
+                          {selected.service.description}
+                        </Text>
+                        <Group justify="space-between">
+                          <Text fw={600} size="sm">
+                            ₱{selected.service.price}
+                          </Text>
+                          <Text size="sm" c="dimmed">
+                            {selected.service.duration} mins
+                          </Text>
+                        </Group>
+                      </div>
+                      <Button
+                        variant="subtle"
+                        color="red"
+                        size="xs"
+                        onClick={() =>
+                          setServices((prev) =>
+                            prev.filter(
+                              (s) => s.service._id !== selected.service._id,
+                            ),
+                          )
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </Group>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </ScrollArea>
+            <Divider my="md" />
+            <Group justify="space-between">
+              <Text fw={600}>
+                Total Price: ₱
+                {services
+                  .reduce((sum, s) => sum + s.service.price, 0)
+                  .toFixed(2)}
               </Text>
-              <Divider my="md" />
-              <Group justify="space-between">
-                <Text fw={600}>₱{service.price}</Text>
-                <Text size="sm" c="dimmed">
-                  {service.duration} mins
-                </Text>
-              </Group>
-            </div>
+              <Text fw={600}>
+                Total Duration:{" "}
+                {services.reduce((sum, s) => sum + s.service.duration, 0)} mins
+              </Text>
+            </Group>
           </Card>
 
           {/* --- Booking Stepper --- */}
@@ -433,6 +575,122 @@ export default function BookAppointment() {
               onStepClick={setActive}
               allowNextStepsSelect={false}
             >
+              <Stepper.Step label="Select Services">
+                <Text mb="md">Choose the services you want to book:</Text>
+                <ScrollArea h={400}>
+                  <SimpleGrid cols={2} spacing="md">
+                    {allServices.map((s) => {
+                      const isSelected = services.some(
+                        (selected) => selected.service._id === s._id,
+                      );
+                      return (
+                        <Card
+                          key={s._id}
+                          shadow={isSelected ? "lg" : "sm"}
+                          radius="md"
+                          withBorder
+                          style={{
+                            cursor: "pointer",
+                            borderColor: isSelected ? "green" : undefined,
+                          }}
+                          onClick={() => {
+                            const intensityOptions = s.intensity
+                              ? s.intensity
+                                  .split(",")
+                                  .map((i) => i.trim())
+                                  .filter((i) => i)
+                              : [];
+                            if (isSelected) {
+                              if (intensityOptions.length > 0) {
+                                // Update intensity
+                                setIntensityModal({
+                                  service: s,
+                                  onSelect: (intensity: string) => {
+                                    setServices((prev) =>
+                                      prev.map((selected) =>
+                                        selected.service._id === s._id
+                                          ? { ...selected, intensity }
+                                          : selected,
+                                      ),
+                                    );
+                                    setIntensityModal(null);
+                                  },
+                                  isUpdate: true,
+                                });
+                              } else {
+                                // Remove service
+                                setServices((prev) =>
+                                  prev.filter(
+                                    (selected) =>
+                                      selected.service._id !== s._id,
+                                  ),
+                                );
+                              }
+                            } else {
+                              if (intensityOptions.length > 0) {
+                                // Add with intensity
+                                setIntensityModal({
+                                  service: s,
+                                  onSelect: (intensity: string) => {
+                                    setServices((prev) => [
+                                      ...prev,
+                                      { service: s, intensity },
+                                    ]);
+                                    setIntensityModal(null);
+                                  },
+                                  isUpdate: false,
+                                });
+                              } else {
+                                // Add without intensity
+                                setServices((prev) => [
+                                  ...prev,
+                                  { service: s },
+                                ]);
+                              }
+                            }
+                          }}
+                        >
+                          <Image
+                            src={s.imageUrl || "/img/placeholder.jpg"}
+                            height={120}
+                            fit="contain"
+                            alt={s.name}
+                          />
+                          <Text fw={500} size="sm" mt="xs">
+                            {s.name}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {s.description}
+                          </Text>
+                          <Group justify="space-between" mt="xs">
+                            <Text fw={600} size="sm">
+                              ₱{s.price}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {s.duration} mins
+                            </Text>
+                          </Group>
+                          {isSelected && (
+                            <Badge color="green" size="sm" mt="xs">
+                              Selected
+                            </Badge>
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </SimpleGrid>
+                </ScrollArea>
+                {services.length > 0 && (
+                  <Text mt="md" fw={600}>
+                    Selected Services: {services.length} ( ₱
+                    {services
+                      .reduce((sum, s) => sum + s.service.price, 0)
+                      .toFixed(2)}{" "}
+                    total)
+                  </Text>
+                )}
+              </Stepper.Step>
+
               <Stepper.Step label="Select Availability">
                 <Group grow mb="md">
                   <Group grow mb="md">
@@ -613,7 +871,26 @@ export default function BookAppointment() {
               <Stepper.Step label="Review & Confirm">
                 <Stack>
                   <Text>
-                    <b>Service:</b> {service.name}
+                    <b>Services:</b>
+                  </Text>
+                  {services.map((selected) => (
+                    <Text key={selected.service._id} ml="md">
+                      • {selected.service.name} - ₱{selected.service.price} (
+                      {selected.service.duration} mins)
+                      {selected.intensity &&
+                        ` (Intensity: ${selected.intensity})`}
+                    </Text>
+                  ))}
+                  <Text>
+                    <b>Total Price:</b> ₱
+                    {services
+                      .reduce((sum, s) => sum + s.service.price, 0)
+                      .toFixed(2)}
+                  </Text>
+                  <Text>
+                    <b>Total Duration:</b>{" "}
+                    {services.reduce((sum, s) => sum + s.service.duration, 0)}{" "}
+                    mins
                   </Text>
                   <Text>
                     <b>Date:</b> {date}

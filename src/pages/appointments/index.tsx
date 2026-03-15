@@ -6,6 +6,7 @@ import {
   Divider,
   Flex,
   Group,
+  Image,
   Loader,
   Text,
   Title,
@@ -93,7 +94,9 @@ export default function Appointments() {
       const totalPaid = a.payments
         ?.filter((p: any) => p.status === "Completed")
         .reduce((sum: number, p: any) => sum + p.amount, 0);
-      const remaining = a.serviceId?.price - (totalPaid || 0);
+      const remaining =
+        a.services.reduce((sum, s) => sum + s.service.price, 0) -
+        (totalPaid || 0);
       return (
         remaining > 0 && a.status !== "Cancelled" && a.status !== "Completed"
       );
@@ -145,57 +148,64 @@ export default function Appointments() {
                     >
                       {/* LEFT SECTION */}
                       <Flex direction="column" gap={6} className="flex-1">
-                        {a.serviceId ? (
-                          <>
-                            <Group justify="space-between">
-                              <Text fw={600} size="xl">
-                                {a.serviceId?.name}
-                              </Text>
-                              <Badge color={getStatusColor(a.status)}>
-                                {a.status}
-                              </Badge>
-                            </Group>
+                        <Group justify="space-between">
+                          <Text fw={600} size="xl">
+                            {a.services.length === 1
+                              ? a.services[0].service.name
+                              : `${a.services.length} Services`}
+                          </Text>
+                          <Badge color={getStatusColor(a.status)}>
+                            {a.status}
+                          </Badge>
+                        </Group>
 
-                            <Text size="sm">{a.serviceId?.category}</Text>
+                        {a.services.map((s, index) => (
+                          <div key={index}>
+                            <Text size="sm">{s.service.category}</Text>
                             <Text size="sm" c="dimmed">
-                              {a.serviceId?.description}
+                              {s.service.name} - {s.service.description}
                             </Text>
-
-                            <Group justify="space-between">
-                              <Text fw={500} size="md">
-                                {formatTime(a.startTime)} –{" "}
-                                {formatTime(a.endTime)}
-                              </Text>
-                              <Text fw={500}>
-                                ₱{a.serviceId?.price.toFixed(2)}
-                              </Text>
-                            </Group>
-
-                            {/* <div className="">
-                              <Image
-                                src={
-                                  a.employee
-                                    ? `/images/employees/${a.employee}.jpg`
-                                    : "/placeholder.jpg"
-                                }
-                                alt={a.employee ? a.employee : "Placeholder"}
-                                h={80}
-                                fit="contain"
-                                radius="md"
-                              />
-                            </div> */}
-                            <Text size="sm">
-                              Massage Therapist: {a.employee}
-                            </Text>
-
-                            {a.status === "Cancelled" && a.notes && (
-                              <Text size="sm" c="red" mt={4}>
-                                <strong>Cancellation Notes:</strong> {a.notes}
+                            {s.intensity && (
+                              <Text size="xs" c="blue.7" ml={12}>
+                                Intensity: {s.intensity}
                               </Text>
                             )}
-                          </>
-                        ) : (
-                          "Appointment record is not available. Service has been deleted."
+                          </div>
+                        ))}
+
+                        <Group justify="space-between">
+                          <Text fw={500} size="md">
+                            {formatTime(a.startTime)} – {formatTime(a.endTime)}
+                          </Text>
+                          <Text fw={500}>
+                            ₱
+                            {a.services
+                              .reduce((sum, s) => sum + s.service.price, 0)
+                              .toFixed(2)}
+                          </Text>
+                        </Group>
+
+                        <div className="">
+                          <Image
+                            src={a.employee?.imageUrl || "/placeholder.jpg"}
+                            alt={a.employee?.name || "Placeholder"}
+                            h={80}
+                            fit="contain"
+                            radius="md"
+                          />
+                        </div>
+                        <Text size="sm">
+                          Massage Therapist:{" "}
+                          {a.employee?.name ||
+                            (typeof a.employee === "string"
+                              ? a.employee
+                              : "Not assigned")}
+                        </Text>
+
+                        {a.status === "Cancelled" && a.notes && (
+                          <Text size="sm" c="red" mt={4}>
+                            <strong>Cancellation Notes:</strong> {a.notes}
+                          </Text>
                         )}
                       </Flex>
 
