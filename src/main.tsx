@@ -76,11 +76,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <ThemeProvider>
           <Notifications
-            limit={1}
-            zIndex={1000}
+            limit={3}
+            zIndex={9999}
             position="top-right"
             miw={250}
             w={"fit-content"}
+
           />
           <RouterProvider router={router} />
         </ThemeProvider>

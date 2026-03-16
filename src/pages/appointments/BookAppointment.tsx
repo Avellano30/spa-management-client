@@ -319,13 +319,13 @@ export default function BookAppointment() {
     }
   };
 
-  if (services.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <Loader size="lg" />
-      </div>
-    );
-  }
+    if (allServices.length === 0) {
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <Loader size="lg" />
+            </div>
+        );
+    }
 
   return (
     <>
@@ -334,36 +334,37 @@ export default function BookAppointment() {
         opened={termsOpened}
         onClose={handleCloseTermsModal}
         title="Terms & Conditions"
-        size="md"
+        size="xl"
+
       >
-        <ScrollArea h={300} className="border border-gray-300 p-4 rounded-xl">
-          <Text size="sm" c="dimmed">
-            <strong>Booking Policy:</strong>
+        <ScrollArea h={450}  className="border border-gray-300 p-3 rounded-xl">
+          <Text size="xl" c="dimmed">
+            <strong >Booking Policy:</strong>
             <br />• A <strong>{downPaymentPercent}% downpayment</strong> is
             required to confirm your booking.
-            <br />• The downpayment is <strong>refundable upon cancellation</strong>.<br />•
+            <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong>.<br />•
             Remaining <strong>{100 - downPaymentPercent}% balance</strong> must
             be paid before or on the day of the appointment.
             <br />
             • All appointments are subject to availability and are considered
             confirmed only after downpayment is received.
             <br />
-            • Clients are responsible for ensuring their contact information is
-            accurate for booking confirmation and notifications.
+              • Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
             <br />
+              • <strong>Multiple Booking </strong> is allowed but only <strong> (1) TYPE OF SERVICE PER CATEGORY</strong> is permitted.
+              <br />
+
             <br />
             <strong>Cancellation & Rescheduling:</strong>
             <br />• You may <strong>cancel</strong> an appointment only while it
-            is still marked as <strong>Pending</strong>.<br />• You may{" "}
+            is still marked as <strong>Approved</strong>.<br />• You may{" "}
             <strong>reschedule</strong> an appointment if it is{" "}
-            <strong>Approved</strong> or <strong>Rescheduled</strong>, provided
-            it is done at least <strong>24 hours before</strong> the scheduled
-            start time.
+              <strong>Approved.</strong>
             <br />
             • Cancellations or reschedule requests made less than 24 hours
             before the appointment may not be accommodated.
             <br />
-            • Refunds are provided for cancellations.
+            <strong>• Refunds</strong> are provided for cancellations.
             <br />
             <br />
             <strong>Late Arrival Policy:</strong>
@@ -373,14 +374,7 @@ export default function BookAppointment() {
             • Excessive delays may be treated as a no-show, resulting in
             forfeiture of any payments made.
             <br />
-            <br />
-            <strong>No-Show Policy:</strong>
-            <br />• Failure to arrive without prior notice will be considered a{" "}
-            <strong>no-show</strong> and may result in full service charges or
-            forfeiture of downpayment.
-            <br />
-            • Repeated no-shows may result in booking restrictions.
-            <br />
+
             <br />
             <strong>Health & Safety:</strong>
             <br />
@@ -435,34 +429,31 @@ export default function BookAppointment() {
       </Modal>
 
       {/* --- Intensity Selection Modal --- */}
-      <Modal
-        opened={!!intensityModal}
-        onClose={() => setIntensityModal(null)}
-        title={`${intensityModal?.isUpdate ? "Update" : "Select"} Intensity for ${intensityModal?.service.name}`}
-        size="sm"
-      >
-        <Select
-          label="Intensity"
-          placeholder="Choose intensity"
-          data={
-            intensityModal?.service.intensity
-              ? intensityModal.service.intensity
-                  .split(",")
-                  .map((int) => int.trim())
-                  .filter((int) => int)
-                  .map((int) => ({
-                    value: int,
-                    label: int,
-                  }))
-              : []
-          }
-          onChange={(value) => {
-            if (value && intensityModal) {
-              intensityModal.onSelect(value);
-            }
-          }}
-        />
-      </Modal>
+        <Modal
+            opened={!!intensityModal}
+            onClose={() => setIntensityModal(null)}
+            title={`Select Intensity for ${intensityModal?.service.name}`}
+            size="sm"
+        >
+            <Select
+                label="Intensity"
+                placeholder="Choose intensity"
+                data={
+                    intensityModal?.service.intensity
+                        ? intensityModal.service.intensity
+                            .split(",")
+                            .map((i) => i.trim())
+                            .filter((i) => i)
+                            .map((i) => ({ value: i, label: i }))
+                        : []
+                }
+                onChange={(value) => {
+                    if (value && intensityModal) {
+                        intensityModal.onSelect(value);
+                    }
+                }}
+            />
+        </Modal>
 
       <Container size="lg" className="py-1">
         <div className="flex flex-col md:flex-col gap-10">
@@ -593,38 +584,24 @@ export default function BookAppointment() {
                             borderColor: isSelected ? "green" : undefined,
                           }}
                           onClick={() => {
-                            const intensityOptions = s.intensity
+
+
+                              const intensityOptions = s.intensity
                               ? s.intensity
                                   .split(",")
                                   .map((i) => i.trim())
                                   .filter((i) => i)
                               : [];
+                              //show a modal that the service was already selected
                             if (isSelected) {
-                              if (intensityOptions.length > 0) {
-                                // Update intensity
-                                setIntensityModal({
-                                  service: s,
-                                  onSelect: (intensity: string) => {
-                                    setServices((prev) =>
-                                      prev.map((selected) =>
-                                        selected.service._id === s._id
-                                          ? { ...selected, intensity }
-                                          : selected,
-                                      ),
-                                    );
-                                    setIntensityModal(null);
-                                  },
-                                  isUpdate: true,
+
+                                notifications.show({
+                                    title: "Already Added",
+                                    message: `${s.name} is already in your selected services.`,
+                                    color: "yellow",
                                 });
-                              } else {
-                                // Remove service
-                                setServices((prev) =>
-                                  prev.filter(
-                                    (selected) =>
-                                      selected.service._id !== s._id,
-                                  ),
-                                );
-                              }
+                                return;
+
                             } else {
                               if (intensityOptions.length > 0) {
                                 // Add with intensity

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
+
+    Modal,
+    Select,
   Grid,
   Card,
   Image,
@@ -13,6 +16,7 @@ import {
   Badge,
   Group,
   Container,
+
 } from "@mantine/core";
 import { getAllServices, type Service } from "../../api/services";
 import classes from "./components/FeaturesCards.module.css";
@@ -24,7 +28,9 @@ export default function AppServices() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const homepageSettings = useHomepageSettings();
   const navigate = useNavigate();
-
+    const [intensityModal, setIntensityModal] = useState<{
+        service: Service;
+    } | null>(null);
   useEffect(() => {
     getAllServices()
       .then(setServices)
@@ -32,14 +38,23 @@ export default function AppServices() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleBookNow = (serviceId: string) => {
-    const session = localStorage.getItem("session");
-    if (!session) {
-      navigate(`/sign-in?redirect=/book?serviceId=${serviceId}`);
-      return;
-    }
-    navigate(`/book?serviceId=${serviceId}`);
-  };
+    const handleBookNow = (service: Service) => {
+        const session = localStorage.getItem("session");
+        if (!session) {
+            navigate(`/sign-in?redirect=/book?serviceId=${service._id}`);
+            return;
+        }
+
+        const intensityOptions = service.intensity
+            ? service.intensity.split(",").map((i) => i.trim()).filter((i) => i)
+            : [];
+
+        if (intensityOptions.length > 0) {
+            setIntensityModal({ service });
+        } else {
+            navigate(`/book?serviceId=${service._id}`);
+        }
+    };
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
@@ -62,6 +77,32 @@ export default function AppServices() {
 
   return (
     <Stack align="center" className="w-full px-4 max-w-5xl mx-auto">
+        <Modal
+            opened={!!intensityModal}
+            onClose={() => setIntensityModal(null)}
+            title={`Select Intensity for ${intensityModal?.service.name}`}
+            size="sm"
+        >
+            <Select
+                label="Intensity"
+                placeholder="Choose intensity"
+                data={
+                    intensityModal?.service.intensity
+                        ? intensityModal.service.intensity
+                            .split(",")
+                            .map((i) => i.trim())
+                            .filter((i) => i)
+                            .map((i) => ({ value: i, label: i }))
+                        : []
+                }
+                onChange={(value) => {
+                    if (value && intensityModal) {
+                        navigate(`/book?serviceId=${intensityModal.service._id}&intensity=${value}`);
+                        setIntensityModal(null);
+                    }
+                }}
+            />
+        </Modal>
       <Container size="lg" py="xl">
         <Group justify="center">
           <Badge variant="filled" size="lg" className="bg-blue-600!">
@@ -139,7 +180,8 @@ export default function AppServices() {
                     color="blue"
                     className="bg-blue-600! hover:bg-blue-700! text-white transition-all duration-200"
                     disabled={s.status !== "available"}
-                    onClick={() => handleBookNow(s._id)}
+                    onClick={() => handleBookNow(s)}
+
                   >
                     {s.status === "available" ? "Book Now" : "Unavailable"}
                   </Button>
