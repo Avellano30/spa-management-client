@@ -185,7 +185,7 @@ export default function Appointments() {
                           </Text>
                         </Group>
 
-                        <div className="">
+                        <div className="self-start">
                           <Image
                             src={a.employee?.imageUrl || "/placeholder.jpg"}
                             alt={a.employee?.name || "Placeholder"}

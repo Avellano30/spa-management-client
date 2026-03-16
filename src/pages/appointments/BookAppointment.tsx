@@ -341,7 +341,7 @@ export default function BookAppointment() {
             <strong>Booking Policy:</strong>
             <br />• A <strong>{downPaymentPercent}% downpayment</strong> is
             required to confirm your booking.
-            <br />• The downpayment is <strong>non-refundable</strong>.<br />•
+            <br />• The downpayment is <strong>refundable upon cancellation</strong>.<br />•
             Remaining <strong>{100 - downPaymentPercent}% balance</strong> must
             be paid before or on the day of the appointment.
             <br />
@@ -363,8 +363,7 @@ export default function BookAppointment() {
             • Cancellations or reschedule requests made less than 24 hours
             before the appointment may not be accommodated.
             <br />
-            • Refunds are not provided for cancellations, except when the spa
-            must cancel due to unavoidable circumstances.
+            • Refunds are provided for cancellations.
             <br />
             <br />
             <strong>Late Arrival Policy:</strong>

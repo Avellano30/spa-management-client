@@ -57,7 +57,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             size="sm"
             color="white"
           />
-          <span className="text-white font-medium">
+          <span className="text-white font-medium text-2xl">
             Welcome back, {authState?.firstName}!
           </span>
         </Group>

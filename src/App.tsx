@@ -55,8 +55,8 @@ export default function AppLayout() {
   return (
     <ThemeProvider>
       <HomepageSettingsContext.Provider value={homepageSettings}>
-        <header className="sticky top-0 z-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 h-[62px] flex items-center justify-between">
+          <header className="sticky top-0 z-50 border-b border-gray-200 text-lg ">
+          <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between">
             {/* Logo */}
             <div
               className="flex items-center gap-2 cursor-pointer"
@@ -64,7 +64,7 @@ export default function AppLayout() {
             >
               <img
                 src={homepageSettings?.brand.logoUrl}
-                className="w-14 h-14"
+                className="w-19 h-19"
                 alt=""
               />
               <span className="hidden sm:block font-semibold text-lg">
