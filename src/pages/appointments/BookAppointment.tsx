@@ -120,7 +120,7 @@ export default function BookAppointment() {
           (item) => item.date.split("T")[0] === date,
         ).length;
         const totalRooms = spaSettings?.totalRooms || 0;
-        setAvailableBeds(totalRooms - eventsOnDate);
+          setAvailableBeds(Math.max(0, totalRooms - eventsOnDate));
       } catch {
         setAvailableBeds(0);
       }
@@ -796,10 +796,10 @@ export default function BookAppointment() {
                         size="48px"
                         fw={700}
                         ta="center"
-                        c="green"
+                        c={availableBeds === 0 ? "red" : "green"}
                         style={{ lineHeight: 1 }}
                       >
-                        {availableBeds}
+                          {availableBeds === 0 ? "No Available Beds" : availableBeds}
                       </Text>
                     </Box>
                   </Box>
