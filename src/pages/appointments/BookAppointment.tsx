@@ -32,12 +32,14 @@ import {
   createAppointment,
   deleteAppointment,
   getClientId,
+    getAppointments,
+    type Appointment,
 } from "../../api/appointments";
 import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
 import BookingCalendar from "../../components/BookingCalendar";
 import dayjs from "dayjs";
-import { getAppointments } from "../../api/appointments";
+
 
 
 interface DecodedToken {
