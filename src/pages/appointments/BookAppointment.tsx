@@ -39,6 +39,7 @@ import BookingCalendar from "../../components/BookingCalendar";
 import dayjs from "dayjs";
 import { getAppointments } from "../../api/appointments";
 
+
 interface DecodedToken {
   userId: string;
 }
@@ -111,22 +112,26 @@ export default function BookAppointment() {
     });
   }, [serviceId]);
 
-  useEffect(() => {
-    async function updateBeds() {
-      if (!date) return;
-      try {
-        const data = await getAppointments({ status: "Approved" });
-        const eventsOnDate = data.filter(
-          (item) => item.date.split("T")[0] === date,
-        ).length;
-        const totalRooms = spaSettings?.totalRooms || 0;
-          setAvailableBeds(Math.max(0, totalRooms - eventsOnDate));
-      } catch {
-        setAvailableBeds(0);
-      }
-    }
-    updateBeds();
-  }, [date, spaSettings]);
+    useEffect(() => {
+        async function updateBeds() {
+            if (!date) return;
+            try {
+                const data = await getAppointments({ status: "Approved" });
+                setAppointments(data);
+                const conflictingBookings = data.filter((item) => {
+                    const sameDate = item.date.split("T")[0] === date;
+                    if (!sameDate) return false;
+                    if (time) return item.startTime === time;
+                    return true;
+                }).length;
+                const totalRooms = spaSettings?.totalRooms || 0;
+                setAvailableBeds(Math.max(0, totalRooms - conflictingBookings));
+            } catch {
+                setAvailableBeds(0);
+            }
+        }
+        updateBeds();
+    }, [date, time, spaSettings]); // 👈 added time
 
   useEffect(() => {
     const agreed = localStorage.getItem("termsAgreed");
@@ -142,15 +147,32 @@ export default function BookAppointment() {
   }, []);
 
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+    const [appointments, setAppointments] = useState<Appointment[]>([]); // 👈 add this
 
-  function isEmployeeAvailable(emp: any, selectedDate: string | null) {
-    if (!selectedDate) return true; // Show as available when no date selected
-    const dayOfWeek = dayjs(selectedDate).format("dddd").toLowerCase(); // "monday"
-    if (!emp.schedule) return false;
-    return emp.schedule.some((d: string) =>
-      d.toLowerCase().includes(dayOfWeek),
-    );
-  }
+    function isEmployeeAvailable(emp: any, selectedDate: string | null) {
+        if (!selectedDate) return true;
+        if (availableBeds <= 0) return false;
+        // Check 1: works on that day?
+        const dayOfWeek = dayjs(selectedDate).format("dddd").toLowerCase();
+        if (!emp.schedule) return false;
+        const worksOnDay = emp.schedule.some((d: string) =>
+            d.toLowerCase().includes(dayOfWeek),
+        );
+        if (!worksOnDay) return false;
+
+        // Check 2: already booked at that date and time?
+        if (time) {
+            const alreadyBooked = appointments.some((appt) => {
+                const sameDate = appt.date.split("T")[0] === selectedDate;
+                const sameTime = appt.startTime === time;
+                const sameEmployee = appt.employee?._id === emp._id;
+                return sameDate && sameTime && sameEmployee;
+            });
+            if (alreadyBooked) return false;
+        }
+
+        return true;
+    }
 
   const navigate = useNavigate();
 
@@ -178,84 +200,102 @@ export default function BookAppointment() {
     }
   };
 
-  const handleNext = async () => {
-    if (!termsAgreed) {
-      return notifications.show({
-        title: "Terms not agreed",
-        message: (
-          <Text size="sm">
-            You must agree to the Terms & Conditions before booking.{" "}
-            <Text
-              span
-              c="blue"
-              fw={600}
-              style={{ cursor: "pointer", textDecoration: "underline" }}
-              onClick={openTermsModal}
-            >
-              Click here to review & agree.
-            </Text>
-          </Text>
-        ),
-        color: "yellow",
-      });
-    }
+    const handleNext = async () => {
+        if (!termsAgreed) {
+            return notifications.show({
+                title: "Terms not agreed",
+                message: (
+                    <Text size="sm">
+                        You must agree to the Terms & Conditions before booking.{" "}
+                        <Text
+                            span
+                            c="blue"
+                            fw={600}
+                            style={{ cursor: "pointer", textDecoration: "underline" }}
+                            onClick={openTermsModal}
+                        >
+                            Click here to review & agree.
+                        </Text>
+                    </Text>
+                ),
+                color: "yellow",
+            });
+        }
 
-    if (active === 0 && services.length === 0) {
-      return notifications.show({
-        title: "No Services Selected",
-        message: "Please select at least one service before continuing.",
-        color: "yellow",
-      });
-    }
+        if (active === 0 && services.length === 0) {
+            return notifications.show({
+                title: "No Services Selected",
+                message: "Please select at least one service before continuing.",
+                color: "yellow",
+            });
+        }
 
-    if (active === 1 && (!date || !time)) {
-      return notifications.show({
-        title: "Incomplete Details",
-        message: "Please select a date and time before continuing.",
-        color: "yellow",
-      });
-    }
+        if (active === 1 && (!date || !time)) {
+            return notifications.show({
+                title: "Incomplete Details",
+                message: "Please select a date and time before continuing.",
+                color: "yellow",
+            });
+        }
 
-    // Create temporary appointments when moving from step 1 → 2
-    if (active === 1 && tempAppointmentIds.length === 0) {
-      const sessionToken = localStorage.getItem("session");
-      if (!sessionToken)
-        return navigate(
-          `/sign-in?redirect=/book-appointment?serviceId=${serviceId}`,
-        );
+        // ✅ FIX 1: Block booking when no beds available
+        if (active === 1 && availableBeds <= 0) {
+            return notifications.show({
+                title: "No Available Beds",
+                message: "There are no available beds for the selected date and time.",
+                color: "red",
+            });
+        }
 
-      const decoded = jwtDecode<DecodedToken>(sessionToken);
-      const clientId = decoded.userId;
+        // ✅ FIX 2: Block booking when no therapist selected
+        if (active === 1 && !selectedEmployee) {
+            return notifications.show({
+                title: "No Therapist Selected",
+                message: "Please select a therapist before continuing.",
+                color: "yellow",
+            });
+        }
 
-      try {
-        setLoading(true);
-        const appointment = await createAppointment({
-          clientId,
-          services: services.map((selected) => ({
-            serviceId: selected.service._id,
-            intensity: selected.intensity,
-          })),
-          date: date!,
-          startTime: time,
-          notes,
-          isTemporary: true,
-          employee: selectedEmployee ?? "",
-        });
-        setTempAppointmentIds([appointment._id]);
-      } catch (err: any) {
-        notifications.show({
-          title: "Error",
-          message: err.message || "Could not create temporary bookings.",
-          color: "red",
-        });
-        return; // stop progression
-      } finally {
-        setLoading(false);
-      }
-    }
+        // Create temporary appointments when moving from step 1 → 2
+        if (active === 1 && tempAppointmentIds.length === 0) {
+            const sessionToken = localStorage.getItem("session");
+            if (!sessionToken)
+                return navigate(
+                    `/sign-in?redirect=/book-appointment?serviceId=${serviceId}`,
+                );
 
-    setActive((prev) => prev + 1);
-  };
+            const decoded = jwtDecode<DecodedToken>(sessionToken);
+            const clientId = decoded.userId;
+
+            try {
+                setLoading(true);
+                const appointment = await createAppointment({
+                    clientId,
+                    services: services.map((selected) => ({
+                        serviceId: selected.service._id,
+                        intensity: selected.intensity,
+                    })),
+                    date: date!,
+                    startTime: time,
+                    notes,
+                    isTemporary: true,
+                    employee: selectedEmployee || undefined, // ✅ FIX 3: undefined instead of ""
+                });
+                setTempAppointmentIds([appointment._id]);
+            } catch (err: any) {
+                notifications.show({
+                    title: "Error",
+                    message: err.message || "Could not create temporary bookings.",
+                    color: "red",
+                });
+                return;
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        setActive((prev) => prev + 1);
+    };
 
   const handleBack = async () => {
     // If going back from Step 3 → 2, delete temp appointments
@@ -290,6 +330,7 @@ export default function BookAppointment() {
           date,
           startTime: time,
           notes,
+            employee: selectedEmployee || undefined,
         });
         appointmentIds = [appointment._id];
       }
@@ -690,7 +731,7 @@ export default function BookAppointment() {
                 <BookingCalendar
                   employee={employees.find((e) => e._id === selectedEmployee)}
                   onDateSelect={(selectedDate) => setDate(selectedDate)}
-                  onAvailabilityChange={setAvailableBeds}
+                  // onAvailabilityChange={setAvailableBeds}
                 />
 
                 <Group grow mb="md">
@@ -729,16 +770,21 @@ export default function BookAppointment() {
                               if (statusUnavailable) return;
 
                               // ⚠️ Available employee but not scheduled that day
-                              if (date && !scheduleAvailable) {
-                                notifications.show({
-                                  title: "Unavailable",
-                                  message: `${emp.name} does not work on ${dayjs(
-                                    date,
-                                  ).format("dddd, MMMM D")}`,
-                                  color: "yellow",
+                                const alreadyBooked = date && time && appointments.some((appt) => {
+                                    const sameDate = appt.date.split("T")[0] === date;
+                                    const sameTime = appt.startTime === time;
+                                    const sameEmployee = appt.employee?._id === emp._id;
+                                    return sameDate && sameTime && sameEmployee;
                                 });
-                                return;
-                              }
+
+                                if (alreadyBooked) {
+                                    notifications.show({
+                                        title: "Therapist Unavailable",
+                                        message: `${emp.name} is already booked at ${time} on ${dayjs(date).format("MMMM D, YYYY")}.`,
+                                        color: "red",
+                                    });
+                                    return;
+                                }
 
                               // ✅ Select employee
                               setSelectedEmployee(emp._id);
