@@ -36,7 +36,10 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     .filter((p: any) => p.status === "Completed")
     .reduce((sum: number, p: any) => sum + p.amount, 0);
 
-  const servicePrice = appointment.serviceId?.price || 0;
+    const servicePrice = appointment.services?.reduce(
+        (sum: number, s: any) => sum + (s.service?.price || 0),
+        0
+    ) || 0;
   const remaining = Math.max(servicePrice - totalPaid, 0);
   const downpaymentPercent = spaSettings?.downPayment ?? 30;
   const downpaymentAmount = servicePrice * (downpaymentPercent / 100);
