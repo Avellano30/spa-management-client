@@ -770,6 +770,15 @@ export default function BookAppointment() {
                             onClick={() => {
                               // ❌ Completely disabled if employee status unavailable
                               if (statusUnavailable) return;
+                                // ⚠️ Check if therapist doesn't work that day
+                                if (date && !scheduleAvailable) {
+                                    notifications.show({
+                                        title: "Therapist Unavailable",
+                                        message: `${emp.name} does not work on ${dayjs(date).format("dddd, MMMM D")}.`,
+                                        color: "yellow",
+                                    });
+                                    return;
+                                }
 
                               // ⚠️ Available employee but not scheduled that day
                                 const alreadyBooked = date && time && appointments.some((appt) => {

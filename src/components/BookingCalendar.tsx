@@ -31,9 +31,14 @@ export default function BookingCalendar({
 
   const load = async () => {
     try {
-      const data = await getAppointments({ status: "Approved" });
+        const [approved, rescheduled] = await Promise.all([
+            getAppointments({ status: "Approved" }),
+            getAppointments({ status: "Rescheduled" }),
+        ]);
+        const data = [...approved, ...rescheduled];
 
-      const formatted = data.map((item) => {
+
+        const formatted = data.map((item) => {
         const [date] = item.date.split("T");
         const start12 = to12Hour(item.startTime);
         const end12 = to12Hour(item.endTime);

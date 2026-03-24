@@ -36,8 +36,8 @@ const data = [
 export function FeaturesCards() {
     const homepageSettings = useHomepageSettings();
     const features = data.map((feature) => (
-        <Card key={feature.title} shadow="md" radius="md" className={classes.card} padding="xl">
-            <feature.icon size={50} stroke={1.5} className="text-blue-600" />
+        <Card key={feature.title} shadow="md" radius="md" className={classes.card} padding={40}>
+            <feature.icon size={60} stroke={1.5} className="text-blue-600" />
             <Text fz="lg" fw={500} className={classes.cardTitle} id={'title'} mt="md">
                 {feature.title}
             </Text>

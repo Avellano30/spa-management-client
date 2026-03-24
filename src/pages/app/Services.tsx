@@ -101,7 +101,7 @@ export default function AppServices() {
         );
 
     return (
-        <Stack align="center" className="w-full px-4 max-w-5xl mx-auto">
+        <Stack align="center" className="w-full px-4">
 
             {/* --- Terms & Conditions Modal --- */}
             <Modal
@@ -217,7 +217,7 @@ export default function AppServices() {
                 </Text>
             </Container>
 
-            <Grid mt="xl" className="max-w-6xl mx-auto">
+            <Grid mt="xl" className="w-full px-4">
                 {services.map((s) => {
                     const isExpanded = expandedIds.has(s._id);
                     const isLong = s.description?.length > 100;
@@ -232,23 +232,23 @@ export default function AppServices() {
                                 className="transition-transform hover:scale-[1.02] flex flex-col h-full bg-white/80 backdrop-blur-sm"
                             >
                                 <Card.Section className="overflow-hidden rounded-lg">
-                                    <div className="h-[250px] w-full overflow-hidden">
+                                    <div className="h-[400px] w-full overflow-hidden">
                                         <Image
                                             src={s.imageUrl || "/img/placeholder.jpg"}
                                             alt={s.name}
                                             fit="contain"
-                                            className="h-full w-full max-h-[250px]"
+                                            className="h-full w-full max-h-[360px]"
                                         />
                                     </div>
                                 </Card.Section>
 
                                 <div className="flex flex-col grow mt-3">
-                                    <Text fw={500} size="lg" mb={2} lineClamp={1}>
+                                    <Text fw={500} size="xl" mb={2} lineClamp={1}>
                                         {s.name}
                                     </Text>
 
                                     <Text
-                                        size="sm"
+                                        size="lg"
                                         c="dimmed"
                                         mb={isLong ? 2 : "auto"}
                                         lineClamp={isExpanded ? undefined : 2}
@@ -258,7 +258,7 @@ export default function AppServices() {
 
                                     {isLong && (
                                         <Text
-                                            size="sm"
+                                            size="lg"
                                             c="blue"
                                             mb="auto"
                                             style={{ cursor: "pointer" }}
@@ -273,6 +273,7 @@ export default function AppServices() {
                                     </Text>
 
                                     <Button
+                                        size="lg"
                                         mt="md"
                                         fullWidth
                                         color="blue"

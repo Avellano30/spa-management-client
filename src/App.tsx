@@ -73,7 +73,7 @@ export default function AppLayout() {
             </div>
 
             {/* Desktop Navigation */}
-            <Group gap={24} visibleFrom="sm">
+            <Group gap={40} visibleFrom="sm" >
               {navLinks.map((link) => {
                 const isActive = location.pathname === link.path;
                 return (
@@ -81,7 +81,7 @@ export default function AppLayout() {
                     key={link.path}
                     onClick={() => navigate(link.path)}
                     className={`
-                    relative text-sm font-medium transition
+                    relative text-xl! font-medium transition
                   `}
                   >
                     {link.label}
