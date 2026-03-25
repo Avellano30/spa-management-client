@@ -124,7 +124,7 @@ export default function Appointments() {
                   </Text>
 
                   {actionRequired && (
-                    <Text c="red" mr="sm" size="xs" fw="bold">
+                    <Text c="red" mr="sm" size="lg" fw="bold">
                       Action Required *
                     </Text>
                   )}
@@ -137,7 +137,7 @@ export default function Appointments() {
                     key={a._id}
                     withBorder
                     radius="md"
-                    shadow="sm"
+                    shadow="lg"
                     className="p-4 mb-3 bg-white hover:shadow-md transition-all"
                   >
                     <Flex
@@ -149,7 +149,7 @@ export default function Appointments() {
                       {/* LEFT SECTION */}
                       <Flex direction="column" gap={6} className="flex-1">
                         <Group justify="space-between">
-                          <Text fw={600} size="xl">
+                          <Text fw={700} size="xl" >
                             {a.services.length === 1
                               ? a.services[0].service.name
                               : `${a.services.length} Services`}
@@ -161,12 +161,12 @@ export default function Appointments() {
 
                         {a.services.map((s, index) => (
                           <div key={index}>
-                            <Text size="sm">{s.service.category}</Text>
-                            <Text size="sm" c="dimmed">
+                            <Text size="lg">{s.service.category}</Text>
+                            <Text size="lg" c="dimmed">
                               {s.service.name} - {s.service.description}
                             </Text>
                             {s.intensity && (
-                              <Text size="xs" c="blue.7" ml={12}>
+                              <Text size="lg" c="blue.7" ml={0}>
                                 Intensity: {s.intensity}
                               </Text>
                             )}
@@ -189,12 +189,12 @@ export default function Appointments() {
                           <Image
                             src={a.employee?.imageUrl || "/placeholder.jpg"}
                             alt={a.employee?.name || "Placeholder"}
-                            h={80}
+                            h={150}
                             fit="contain"
                             radius="md"
                           />
                         </div>
-                        <Text size="sm">
+                        <Text size="lg">
                           Massage Therapist:{" "}
                           {a.employee?.name ||
                             (typeof a.employee === "string"
@@ -218,7 +218,7 @@ export default function Appointments() {
                         direction="column"
                         gap="xs"
                         align="center"
-                        className="w-full sm:w-[220px]"
+                        className="w-full sm:w-[250px]"
                       >
                         <PaymentActions
                           appointment={a}

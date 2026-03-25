@@ -498,7 +498,7 @@ export default function BookAppointment() {
             />
         </Modal>
 
-      <Container size="lg" className="py-1">
+      <Container size="2xl" className="py-1">
         <div className="flex flex-col md:flex-col gap-10">
           {/* --- Selected Services Info --- */}
           <Card
@@ -507,7 +507,7 @@ export default function BookAppointment() {
             withBorder
             className="flex-1 overflow-hidden bg-white/80 backdrop-blur-sm"
           >
-            <Title order={4} mb="md">
+            <Title order={4} mb="md" size={30}>
               Selected Services
             </Title>
             <ScrollArea h={300}>
@@ -540,13 +540,13 @@ export default function BookAppointment() {
                         />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <Text fw={500}>{selected.service.name}</Text>
+                        <Text fw={500} size="xl">{selected.service.name}</Text>
                         {selected.intensity && (
-                          <Text size="sm" c="blue">
+                          <Text size="lg" c="blue">
                             Intensity: {selected.intensity}
                           </Text>
                         )}
-                        <Text size="sm" c="dimmed">
+                        <Text size="md" c="dimmed">
                           {selected.service.description}
                         </Text>
                         <Group justify="space-between">
@@ -561,7 +561,7 @@ export default function BookAppointment() {
                       <Button
                         variant="subtle"
                         color="red"
-                        size="xs"
+                        size="md"
                         onClick={() =>
                           setServices((prev) =>
                             prev.filter(
@@ -610,14 +610,15 @@ export default function BookAppointment() {
             >
               <Stepper.Step label="Select Services">
                 <Text mb="md">Choose the services you want to book:</Text>
-                <ScrollArea h={400}>
-                  <SimpleGrid cols={2} spacing="md">
+                <ScrollArea h={700}>
+                  <SimpleGrid cols={2} spacing="sm">
                     {allServices.map((s) => {
                       const isSelected = services.some(
                         (selected) => selected.service._id === s._id,
                       );
                       return (
                         <Card
+
                           key={s._id}
                           shadow={isSelected ? "lg" : "sm"}
                           radius="md"
@@ -671,21 +672,22 @@ export default function BookAppointment() {
                         >
                           <Image
                             src={s.imageUrl || "/img/placeholder.jpg"}
-                            height={120}
+                            h={350}
+
                             fit="contain"
                             alt={s.name}
                           />
-                          <Text fw={500} size="sm" mt="xs">
+                          <Text fw={500} size="xl" mt="xs">
                             {s.name}
                           </Text>
-                          <Text size="xs" c="dimmed">
+                          <Text size="md" c="dimmed">
                             {s.description}
                           </Text>
                           <Group justify="space-between" mt="xs">
-                            <Text fw={600} size="sm">
+                            <Text fw={600} size="lg">
                               ₱{s.price}
                             </Text>
-                            <Text size="xs" c="dimmed">
+                            <Text size="lg" c="dimmed">
                               {s.duration} mins
                             </Text>
                           </Group>
