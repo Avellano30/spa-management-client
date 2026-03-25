@@ -114,7 +114,7 @@ export default function Appointments() {
             <Accordion.Item key={date} value={date}>
               <Accordion.Control>
                 <Group justify="space-between">
-                  <Text fw={600}>
+                  <Text fw={700} size="lg">
                     {new Date(date).toLocaleDateString(undefined, {
                       weekday: "long",
                       year: "numeric",
