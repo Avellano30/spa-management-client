@@ -31,11 +31,12 @@ export default function BookingCalendar({
 
   const load = async () => {
     try {
-        const [approved, rescheduled] = await Promise.all([
+        const [approved, rescheduled,pending] = await Promise.all([
             getAppointments({ status: "Approved" }),
             getAppointments({ status: "Rescheduled" }),
+            getAppointments({ status: "Pending" }),
         ]);
-        const data = [...approved, ...rescheduled];
+        const data = [...approved, ...rescheduled, ...pending];
 
 
         const formatted = data.map((item) => {
@@ -106,11 +107,7 @@ export default function BookingCalendar({
           const totalRooms = spaSettings?.totalRooms || 0;
           const availableBeds = totalRooms - eventsOnDate;
 
-          // showNotification({
-          //   title: `Availability for ${dayjs(arg.date).format("MMMM D, YYYY")}`,
-          //   message: `${eventsOnDate} bookings, ${availableBeds} beds available`,
-          //   color: availableBeds > 0 ? "green" : "red",
-          // });
+
 
           if (onAvailabilityChange) {
             onAvailabilityChange(availableBeds);

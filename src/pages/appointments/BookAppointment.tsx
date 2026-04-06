@@ -118,22 +118,35 @@ export default function BookAppointment() {
         async function updateBeds() {
             if (!date) return;
             try {
-                const data = await getAppointments({ status: "Approved" });
-                setAppointments(data);
-                const conflictingBookings = data.filter((item) => {
+                // ✅ Fetch both Approved AND Pending appointments
+                const [approved, pending] = await Promise.all([
+                    getAppointments({ status: "Approved" }),
+                    getAppointments({ status: "Pending" }),
+                ]);
+
+                const allActiveBookings = [...approved, ...pending];
+                setAppointments(allActiveBookings);
+
+                const conflictingBookings = allActiveBookings.filter((item) => {
                     const sameDate = item.date.split("T")[0] === date;
                     if (!sameDate) return false;
+
+                    // If a specific time is picked, check for that exact slot
                     if (time) return item.startTime === time;
                     return true;
                 }).length;
+
                 const totalRooms = spaSettings?.totalRooms || 0;
+
+                // Subtract both approved and pending from total capacity
                 setAvailableBeds(Math.max(0, totalRooms - conflictingBookings));
-            } catch {
+            } catch (error) {
+                console.error("Error updating bed availability:", error);
                 setAvailableBeds(0);
             }
         }
         updateBeds();
-    }, [date, time, spaSettings]); // 👈 added time
+    }, [date, time, spaSettings]);
 
   useEffect(() => {
     const agreed = localStorage.getItem("termsAgreed");
@@ -151,29 +164,32 @@ export default function BookAppointment() {
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
     const [appointments, setAppointments] = useState<Appointment[]>([]); // 👈 add this
 
-    function isEmployeeAvailable(emp: any, selectedDate: string | null) {
+// Check 1: Does the therapist work on this day of the week?
+    function isEmployeeWorkingOnDay(emp: any, selectedDate: string | null) {
         if (!selectedDate) return true;
-        if (availableBeds <= 0) return false;
-        // Check 1: works on that day?
         const dayOfWeek = dayjs(selectedDate).format("dddd").toLowerCase();
         if (!emp.schedule) return false;
-        const worksOnDay = emp.schedule.some((d: string) =>
-            d.toLowerCase().includes(dayOfWeek),
-        );
-        if (!worksOnDay) return false;
+        return emp.schedule.some((d: string) => d.toLowerCase().includes(dayOfWeek));
+    }
 
-        // Check 2: already booked at that date and time?
-        if (time) {
-            const alreadyBooked = appointments.some((appt) => {
-                const sameDate = appt.date.split("T")[0] === selectedDate;
-                const sameTime = appt.startTime === time;
-                const sameEmployee = appt.employee?._id === emp._id;
-                return sameDate && sameTime && sameEmployee;
-            });
-            if (alreadyBooked) return false;
-        }
+// Check 2: Is the therapist already busy with another client at this time?
+    function isEmployeeBusy(emp: any, selectedDate: string | null, selectedTime: string) {
+        if (!selectedDate || !selectedTime) return false;
 
-        return true;
+        // ✅ Normalizes the date to YYYY-MM-DD for reliable comparison
+        const formattedDate = dayjs(selectedDate).format("YYYY-MM-DD");
+
+        return appointments.some((appt) => {
+            // Extracts only the date part (YYYY-MM-DD) from the ISO string
+            const apptDate = appt.date.split("T")[0];
+
+            const sameDate = apptDate === formattedDate;
+            const sameTime = appt.startTime === selectedTime;
+            const sameEmployee = appt.employee?._id === emp._id;
+
+            // ✅ Returns true only if all three match
+            return sameDate && sameTime && sameEmployee;
+        });
     }
 
   const navigate = useNavigate();
@@ -743,109 +759,95 @@ export default function BookAppointment() {
                     <Text fw={600} mb="xs">
                       Massage Therapist
                     </Text>
-                    <SimpleGrid cols={4} spacing="md">
-                      {employees.map((emp, index) => {
-                        const statusUnavailable = emp.status === "unavailable";
-                        const scheduleAvailable = date
-                          ? isEmployeeAvailable(emp, date)
-                          : true;
+                      <SimpleGrid cols={4} spacing="md">
+                          {employees.map((emp, index) => {
+                              const statusUnavailable = emp.status === "unavailable";
 
-                        const canClick =
-                          !statusUnavailable && scheduleAvailable;
+                              // 1. Check Shift
+                              const worksThisDay = date ? isEmployeeWorkingOnDay(emp, date) : true;
 
-                        return (
-                          <Card
-                            key={`${emp._id}-${index}`}
-                            shadow={selectedEmployee === emp._id ? "lg" : "sm"}
-                            radius="md"
-                            withBorder
-                            style={{
-                              cursor: statusUnavailable
-                                ? "not-allowed"
-                                : "pointer",
-                              opacity: canClick ? 1 : 0.5,
-                              borderColor:
-                                selectedEmployee === emp._id
-                                  ? "green"
-                                  : undefined,
-                            }}
-                            onClick={() => {
-                              // ❌ Completely disabled if employee status unavailable
-                              if (statusUnavailable) return;
-                                // ⚠️ Check if therapist doesn't work that day
-                                if (date && !scheduleAvailable) {
-                                    notifications.show({
-                                        title: "Therapist Unavailable",
-                                        message: `${emp.name} does not work on ${dayjs(date).format("dddd, MMMM D")}.`,
-                                        color: "yellow",
-                                    });
-                                    return;
-                                }
+                              // 2. Check Booking
+                              const isBusy = date && time ? isEmployeeBusy(emp, date, time) : false;
 
-                              // ⚠️ Available employee but not scheduled that day
-                                const alreadyBooked = date && time && appointments.some((appt) => {
-                                    const sameDate = appt.date.split("T")[0] === date;
-                                    const sameTime = appt.startTime === time;
-                                    const sameEmployee = appt.employee?._id === emp._id;
-                                    return sameDate && sameTime && sameEmployee;
-                                });
+                              // Available only if not physically unavailable, works today, and isn't busy
+                              const canClick = !statusUnavailable && worksThisDay && !isBusy;
 
-                                if (alreadyBooked) {
-                                    notifications.show({
-                                        title: "Therapist Unavailable",
-                                        message: `${emp.name} is already booked at ${time} on ${dayjs(date).format("MMMM D, YYYY")}.`,
-                                        color: "red",
-                                    });
-                                    return;
-                                }
+                              return (
+                                  <Card
+                                      key={`${emp._id}-${index}`}
+                                      shadow={selectedEmployee === emp._id ? "lg" : "sm"}
+                                      radius="md"
+                                      withBorder
+                                      style={{
+                                          cursor: statusUnavailable ? "not-allowed" : "pointer",
+                                          opacity: canClick ? 1 : 0.5,
+                                          borderColor: selectedEmployee === emp._id ? "green" : undefined,
+                                      }}
+                                      onClick={() => {
+                                          if (statusUnavailable) return;
 
-                              // ✅ Select employee
-                              setSelectedEmployee(emp._id);
-                            }}
-                          >
-                            <Box
-                              style={{
-                                width: "100%",
-                                aspectRatio: "1 / 1",
-                                overflow: "hidden",
-                                borderRadius: 8,
-                              }}
-                            >
-                              <Image
-                                src={emp.imageUrl || "/img/placeholder.jpg"}
-                                alt={emp.name}
-                                fit="cover"
-                                height="100%"
-                                width="100%"
-                              />
-                            </Box>
+                                          // ✅ PRIORITY 1: Busy check (Red notification + 12hr format)
+                                          if (isBusy) {
+                                              notifications.show({
+                                                  title: "Therapist Unavailable",
+                                                  message: `${emp.name} is already booked at ${to12Hour(time)}.`,
+                                                  color: "red",
+                                              });
+                                              return;
+                                          }
 
-                            <Text ta="center" size="sm" fw={500}>
-                              {emp.name}
-                            </Text>
+                                          // ✅ PRIORITY 2: Shift check (Yellow notification)
+                                          if (!worksThisDay) {
+                                              notifications.show({
+                                                  title: "Therapist Off-Duty",
+                                                  message: `${emp.name} does not work on ${dayjs(date).format("dddd")}.`,
+                                                  color: "yellow",
+                                              });
+                                              return;
+                                          }
 
-                            <Badge
-                              color={
-                                statusUnavailable
-                                  ? "gray"
-                                  : scheduleAvailable
-                                    ? "green"
-                                    : "red"
-                              }
-                              size="sm"
-                              mt="xs"
-                              fullWidth
-                            >
-                              {statusUnavailable
-                                ? "Unavailable"
-                                : scheduleAvailable
-                                  ? "Available"
-                                  : "Unavailable"}
-                            </Badge>
-                          </Card>
-                        );
-                      })}
-                    </SimpleGrid>
+                                          setSelectedEmployee(emp._id);
+                                      }}
+                                  >
+                                      <Box
+                                          style={{
+                                              width: "100%",
+                                              aspectRatio: "1 / 1",
+                                              overflow: "hidden",
+                                              borderRadius: 8,
+                                          }}
+                                      >
+                                          <Image
+                                              src={emp.imageUrl || "/img/placeholder.jpg"}
+                                              alt={emp.name}
+                                              fit="cover"
+                                              height="100%"
+                                              width="100%"
+                                          />
+                                      </Box>
+
+                                      <Text ta="center" size="sm" fw={500} mt="xs">
+                                          {emp.name}
+                                      </Text>
+
+                                      <Badge
+                                          color={statusUnavailable ? "gray" : canClick ? "green" : "red"}
+                                          size="sm"
+                                          mt="xs"
+                                          fullWidth
+                                      >
+                                          {statusUnavailable
+                                              ? "Unavailable"
+                                              : isBusy
+                                                  ? "Busy"
+                                                  : !worksThisDay
+                                                      ? "Off-Duty"
+                                                      : "Available"}
+                                      </Badge>
+                                  </Card>
+                              );
+                          })}
+                      </SimpleGrid>
                     <Box mt="md">
                       <Text fw={600} mb="xs" ta="center">
                         Available Beds
@@ -978,4 +980,13 @@ export default function BookAppointment() {
       </Container>
     </>
   );
+
+}
+function to12Hour(time24: string) {
+    if (!time24) return "";
+    const [hourStr, minute] = time24.split(":");
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
 }
