@@ -106,52 +106,24 @@ export async function rescheduleAppointment(
 
 // Cancel appointment
 export async function cancelAppointment(
-  id: string,
-  notes: string,
+    id: string,
+    notes: string,
 ): Promise<Appointment> {
-  const res = await fetch(`${endpoint}/appointment/${id}/cancel`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ notes }),
-  });
-  if (!res.ok)
-    throw new Error((await res.json()).message || "Failed to cancel");
-  const response = await res.json();
-  // Process refund via PayMongo if there are completed payments
-  if (
-    response.appointment.payments &&
-    response.appointment.payments.some((p: Payment) => p.status === "Completed")
-  ) {
-    try {
-      const payments: Payment[] = response.appointment.payments || [];
+    const res = await fetch(`${endpoint}/appointment/${id}/cancel`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+    });
 
-      // Get completed payments
-      const completedPayments = payments.filter(
-        (p) => p.status === "Completed",
-      );
-
-      // Sum total payments
-      const total_payments = completedPayments.reduce(
-        (sum, p) => sum + p.amount,
-        0,
-      );
-
-      // Process refund
-      if (total_payments > 0) {
-        try {
-          await refundAppointment(id, total_payments, notes);
-        } catch (error) {
-          console.error("Failed to process refund:", error);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to process refund:", error);
-      // Note: We don't throw here to avoid failing the cancellation
+    if (!res.ok) {
+        throw new Error((await res.json()).message || "Failed to cancel");
     }
-  }
 
-  return response.appointment;
-}
+    const response = await res.json();
+
+    // This return MUST be inside the function braces
+    return response.appointment;
+} // <--- Only ONE brace here to close the function
 
 export const deleteAppointment = async (id: string) => {
   const res = await fetch(`${endpoint}/appointment/${id}`, {
