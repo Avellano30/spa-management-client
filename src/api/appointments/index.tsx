@@ -2,7 +2,7 @@ import { jwtDecode, type JwtPayload } from "jwt-decode";
 import type { Service } from "../services";
 import type { Payment } from "../payment";
 import type { Employee } from "../employees";
-import { refundAppointment } from "../payment";
+
 const endpoint = import.meta.env.VITE_ENDPOINT || "http://localhost:3000";
 
 interface DecodedToken extends JwtPayload {
