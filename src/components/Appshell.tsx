@@ -5,6 +5,8 @@ import {
     ScrollArea,
     NavLink,
     Divider,
+    Stack,
+    Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -13,68 +15,95 @@ import {
     IconSettings,
     IconCalendarWeek,
 } from "@tabler/icons-react";
-import React from "react";
-import useHandleLogout from "../modules/auth/handleLogout";
-import { useLocation, useNavigate } from "react-router"; // Added useNavigate for navigation
+import dayjs from "dayjs";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../utils/AuthContext";
+import useHandleLogout from "../modules/auth/handleLogout";
 
-type NavItem = { icon: any; label: string; href: string };
-
-const navData: NavItem[] = [
+const navData = [
     { icon: IconCalendarWeek, label: "Appointments", href: "/my-appointments" },
     { icon: IconMassage, label: "Services", href: "/services" },
     { icon: IconSettings, label: "Settings", href: "/settings" },
 ];
 
 function Layout({ children }: { children: React.ReactNode }) {
+    const [currentTime, setCurrentTime] = useState(dayjs());
     const [opened, { toggle }] = useDisclosure();
     const { authState } = useAuth();
     const { handleLogout } = useHandleLogout();
     const location = useLocation();
-    const navigate = useNavigate(); // Hook for programmatic navigation
+    const navigate = useNavigate();
+
+    // LIVE CLOCK EFFECT: Updates every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(dayjs());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const items = navData.map((item) => (
         <NavLink
             key={item.label}
             active={location.pathname.startsWith(item.href)}
             label={item.label}
-            // 1. Matched icon size to 40
-            leftSection={<item.icon size={25} stroke={1.5} />}
-            // 2. Matched text styles to Sign Out
+            leftSection={<item.icon size={22} stroke={1.5} />}
             styles={{
                 label: { fontSize: '15px', fontWeight: 600 },
-                root: { paddingTop: '12px', paddingBottom: '12px' } // Added padding for better click area
+                root: { padding: '12px' }
             }}
             onClick={() => {
                 navigate(item.href);
-                if (opened) toggle(); // Close mobile menu on click
+                if (opened) toggle();
             }}
         />
     ));
 
     return (
         <AppShell
-            header={{ height: 70 }} // Slightly increased to fit 2xl text better
+            header={{ height: 70 }}
             navbar={{ width: 300, breakpoint: "sm", collapsed: { mobile: !opened } }}
             padding="md"
         >
             <AppShell.Header bg="black">
                 <Group h="100%" px="md">
-                    <Burger
-                        opened={opened}
-                        onClick={toggle}
-                        hiddenFrom="sm"
-                        size="sm"
-                        color="white"
-                    />
-                    <span className="text-white font-medium text-2xl">
-            Welcome back, {authState?.firstName}!
-          </span>
+                    <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" color="white" />
+                    <Text c="white" fw={500} size="xl">
+                        Welcome back, {authState?.firstName}!
+                    </Text>
                 </Group>
             </AppShell.Header>
 
             <AppShell.Navbar>
-                <Divider mt="md" mx="md" />
+                <AppShell.Section p="md">
+                    <Stack gap="xs">
+                        {/* Displaying Date */}
+                        <Stack gap={0}>
+                            <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+                                {currentTime.format("dddd")}
+                            </Text>
+                            <Text size="md" fw={600}>
+                                {currentTime.format("MMMM D, YYYY")}
+                            </Text>
+                        </Stack>
+
+                        <Divider variant="dashed" />
+
+                        {/* Displaying Time */}
+                        <Stack gap={0}>
+                            <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+                                Current Time
+                            </Text>
+                            <Text size="xl" fw={800} ff="monospace" c="dark">
+                                {currentTime.format("h:mm:ss A")}
+                            </Text>
+                        </Stack>
+                    </Stack>
+                </AppShell.Section>
+
+                <Divider mx="md" />
+
                 <AppShell.Section grow my="md" component={ScrollArea} px="md">
                     {items}
                 </AppShell.Section>
@@ -83,12 +112,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 
                 <AppShell.Section p="md">
                     <NavLink
-                        href="/"
                         label="Sign out"
-                        leftSection={<IconLogout size={25} stroke={1.5} />}
+                        leftSection={<IconLogout size={22} stroke={1.5} />}
                         styles={{
                             label: { fontSize: '15px', fontWeight: 600 },
-                            root: { paddingTop: '12px', paddingBottom: '12px' }
+                            root: { padding: '12px' }
                         }}
                         onClick={handleLogout}
                     />
