@@ -118,7 +118,7 @@ export default function AppServices() {
                     <Text size="xl" c="dimmed">
                         <strong>Booking Policy:</strong>
                         <br />• A downpayment is required to confirm your booking.
-                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong>.
+                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong> only from the <strong>SPA Administrator</strong>.
                         <br />• Remaining balance must be paid before or on the day of the appointment.
                         <br />• All appointments are subject to availability and are considered confirmed only after downpayment is received.
                         <br />• Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
@@ -129,7 +129,7 @@ export default function AppServices() {
                         <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
                         <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
                         <br />• Cancellations or reschedule requests made less than 24 hours before the appointment may not be accommodated.
-                        <br /><strong>• Refunds</strong> are provided for cancellations.
+
                         <br />
                         <br />
                         <strong>Late Arrival Policy:</strong>
