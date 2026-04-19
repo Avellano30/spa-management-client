@@ -1,27 +1,103 @@
 @import "tailwindcss";
 
 :root {
-  --app-bg: #ffffff;
-  --app-text: #0f172a;
-  --app-muted: #6b7280;
+    --app-bg: #ffffff;
+    --app-text: #0f172a;
+    --app-muted: #6b7280;
+    --fc-border: rgba(0, 0, 0, 0.05);
 }
 
 .dark {
-  --app-bg: #0b1220;
-  --app-text: #e6eef8;
-  --app-muted: #9ca3af;
+    --app-bg: #0b1220;
+    --app-text: #e6eef8;
+    --app-muted: #9ca3af;
+    --fc-border: rgba(255, 255, 255, 0.08);
 }
 
 html,
 body,
 #root {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  background-color: var(--app-bg);
-  color: var(--app-text);
-  transition:
-    background-color 150ms ease,
-    color 150ms ease;
+    background-color: var(--app-bg);
+    color: var(--app-text);
+    transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* --- Client-Side Modern Calendar --- */
+.fc {
+    --fc-border-color: var(--fc-border);
+    --fc-today-bg-color: rgba(34, 139, 230, 0.04); /* Very subtle highlight */
+    font-family: inherit;
+}
+
+/* Make the grid lines almost invisible for a clean look */
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border: 1px solid var(--fc-border) !important;
+}
+
+.fc-scrollgrid {
+    border: none !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Center and style day headers (Sun, Mon, etc) */
+.fc .fc-col-header-cell {
+    padding: 12px 0 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    color: var(--app-muted);
+    background-color: transparent;
+}
+
+/* Style day numbers */
+.fc .fc-daygrid-day-number {
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 10px !important;
+    color: var(--app-text);
+    opacity: 0.8;
+}
+
+/* --- The "Client Pill" Look --- */
+/* This overrides the standard .fc-event for your busy slots */
+.fc-event.client-event-pill {
+    background-color: #fa5252 !important; /* Soft Red */
+    border: none !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important; /* Fully rounded "pill" shape */
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin: 2px 5px !important;
+}
+
+/* Smooth out the "Today" highlight */
+.fc-day-today {
+    background-color: var(--fc-today-bg-color) !important;
+}
+
+/* Hover effect for selecting dates */
+.fc-daygrid-day:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+    cursor: pointer;
+}
+
+.dark .fc-daygrid-day:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Fix for Popovers */
+.fc-popover {
+    z-index: 9999 !important;
+    background-color: var(--app-bg) !important;
+    border: 1px solid var(--fc-border) !important;
+    border-radius: 8px;
 }
