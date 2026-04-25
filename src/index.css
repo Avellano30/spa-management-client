@@ -14,11 +14,7 @@
     --fc-border: rgba(255, 255, 255, 0.08);
 }
 
-html,
-body,
-#root {
-    height: 100%;
-}
+html, body, #root { height: 100%; }
 
 body {
     background-color: var(--app-bg);
@@ -26,16 +22,14 @@ body {
     transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* --- Client-Side Modern Calendar --- */
+/* --- Base FullCalendar Styling --- */
 .fc {
     --fc-border-color: var(--fc-border);
-    --fc-today-bg-color: rgba(34, 139, 230, 0.04); /* Very subtle highlight */
+    --fc-today-bg-color: rgba(34, 139, 230, 0.04);
     font-family: inherit;
 }
 
-/* Make the grid lines almost invisible for a clean look */
-.fc-theme-standard td,
-.fc-theme-standard th {
+.fc-theme-standard td, .fc-theme-standard th {
     border: 1px solid var(--fc-border) !important;
 }
 
@@ -45,7 +39,6 @@ body {
     overflow: hidden;
 }
 
-/* Center and style day headers (Sun, Mon, etc) */
 .fc .fc-col-header-cell {
     padding: 12px 0 !important;
     font-weight: 600;
@@ -53,10 +46,8 @@ body {
     font-size: 0.7rem;
     letter-spacing: 0.5px;
     color: var(--app-muted);
-    background-color: transparent;
 }
 
-/* Style day numbers */
 .fc .fc-daygrid-day-number {
     font-size: 0.85rem;
     font-weight: 500;
@@ -65,36 +56,84 @@ body {
     opacity: 0.8;
 }
 
-/* --- The "Client Pill" Look --- */
-/* This overrides the standard .fc-event for your busy slots */
-.fc-event.client-event-pill {
-    background-color: #fa5252 !important; /* Soft Red */
+.fc-day-today { background-color: var(--fc-today-bg-color) !important; }
+
+/* --- THE UNIFIED PILL FIX --- */
+
+.fc-daygrid-event,
+.fc-daygrid-dot-event,
+.fc-event,
+.client-event-pill {
     border: none !important;
-    padding: 4px 10px !important;
-    border-radius: 20px !important; /* Fully rounded "pill" shape */
-    font-size: 0.7rem !important;
-    font-weight: 700 !important;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    margin: 2px 5px !important;
+    padding: 3px 10px !important;
+    margin: 2px 4px !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+
+    /* Locked Single Line Layout */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    min-height: 24px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
 }
 
-/* Smooth out the "Today" highlight */
-.fc-day-today {
-    background-color: var(--fc-today-bg-color) !important;
+.client-event-pill {
+    background-color: #fa5252 !important;
+    border-radius: 20px !important;
 }
 
-/* Hover effect for selecting dates */
-.fc-daygrid-day:hover {
-    background-color: rgba(0, 0, 0, 0.01);
-    cursor: pointer;
+/* Hide dots & internal extra time to prevent doubling */
+.fc-daygrid-event-dot,
+.fc-event-dot,
+.fc-event-time {
+    display: none !important;
 }
 
-.dark .fc-daygrid-day:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+/* Text Layout Structure */
+.fc-event-main, .fc-event-main-frame {
+    color: white !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100%;
+    overflow: hidden !important;
 }
 
-/* Fix for Popovers */
+/* If you are using a custom string in the title, style it here */
+.fc-event-title {
+    font-weight: 600;
+    font-size: 0.7rem;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* --- HOVER STATE (Visual Only, No Expansion) --- */
+
+.fc-daygrid-event:hover,
+.client-event-pill:hover {
+    z-index: 10 !important;
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    filter: brightness(1.05);
+    /* No display: block or height: auto here! */
+}
+
+/* --- Buttons & Utilities --- */
+.fc .fc-button-primary {
+    background-color: transparent !important;
+    border: 1px solid var(--fc-border) !important;
+    color: var(--app-text) !important;
+    text-transform: capitalize !important;
+}
+
+.fc .fc-button-active {
+    background-color: #228be6 !important;
+    color: white !important;
+}
+
 .fc-popover {
     z-index: 9999 !important;
     background-color: var(--app-bg) !important;

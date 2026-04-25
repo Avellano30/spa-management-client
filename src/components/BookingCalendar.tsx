@@ -173,7 +173,15 @@ export default function BookingCalendar({
                 height="auto"
                 editable={false}
                 selectable={true}
-                displayEventTime={false}
+                displayEventTime={true}
+                eventDisplay="block"
+                eventTimeFormat={{
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short',
+                    hour12: true,
+                    omitZeroMinute: false
+                }}
                 eventClassNames="client-event-pill"
             />
         </Card>
