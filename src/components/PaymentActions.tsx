@@ -9,6 +9,7 @@ import {
     Textarea,
 } from "@mantine/core";
 import { DateInput, TimePicker } from "@mantine/dates";
+import type { DateValue } from "@mantine/dates";
 import { showNotification } from "@mantine/notifications";
 import { cancelAppointment, rescheduleAppointment } from "../api/appointments";
 import { createPaymongoPayment, getNextPaymentType } from "../api/payment";
@@ -19,8 +20,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const [rescheduleModal, setRescheduleModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
 
-    // Fixed: Keep state as Date | null for the component, but we will convert it for the API
-    const [newDate, setNewDate] = useState<any>(null);
+    const [newDate, setNewDate] = useState<DateValue>(null);
     const [newTime, setNewTime] = useState<string>("");
     const [newNotes, setNewNotes] = useState("");
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
@@ -60,7 +60,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             showNotification({
                 color: "red",
                 title: "Error",
-                message: "Payment could not be initiated."
+                message: "Payment could not be initiated.",
             });
         } finally {
             setLoading(false);
@@ -74,7 +74,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         }
         setLoading(true);
         try {
-            await cancelAppointment(appointment._id, newNotes, true);
+            await cancelAppointment(appointment._id, newNotes);
             showNotification({ color: "green", title: "Cancelled", message: "Appointment cancelled." });
             setCancelModal(false);
             setNewNotes("");
@@ -91,16 +91,15 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             showNotification({
                 color: "red",
                 title: "Missing Info",
-                message: "Select date and time."
+                message: "Select date and time.",
             });
             return;
         }
 
         setLoading(true);
         try {
-            // Conversion to string for API
             const dateObj = new Date(newDate);
-            const dateString = dateObj.toISOString().split('T')[0];
+            const dateString = dateObj.toISOString().split("T")[0];
 
             await rescheduleAppointment(appointment._id, dateString, newTime, newNotes);
             showNotification({ color: "blue", title: "Rescheduled", message: "Successfully moved." });
@@ -167,19 +166,28 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-            <Modal opened={cancelModal} onClose={() => setCancelModal(false)} title="Confirm Cancellation" centered size="sm">
+            <Modal
+                opened={cancelModal}
+                onClose={() => setCancelModal(false)}
+                title="Confirm Cancellation"
+                centered
+                size="sm"
+            >
                 <Stack>
                     <Text size="sm">Are you sure you want to cancel?</Text>
                     <Textarea
                         label="Cancellation Notes"
                         placeholder="Reason..."
-                        value={newNotes}
                         onChange={(e) => setNewNotes(e.currentTarget.value)}
                         required
                     />
                     <Group grow mt="md">
-                        <Button color="gray" variant="outline" onClick={() => setCancelModal(false)}>Go Back</Button>
-                        <Button color="red" onClick={handleCancel} loading={loading}>Yes, Cancel</Button>
+                        <Button color="gray" variant="outline" onClick={() => setCancelModal(false)}>
+                            Go Back
+                        </Button>
+                        <Button color="red" onClick={handleCancel} loading={loading}>
+                            Yes, Cancel
+                        </Button>
                     </Group>
                 </Stack>
             </Modal>
@@ -197,19 +205,25 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                             label="New Date"
                             placeholder="Pick a date"
                             value={newDate}
-                            onChange={setNewDate}
+                            onChange={(val: DateValue) => setNewDate(val)}
                             minDate={new Date()}
                         />
                         <TimePicker
                             label="New Start Time"
                             value={newTime}
-                            onChange={(val) => setNewTime(val)} // Fixed: value is a string, not an event
+                            onChange={(val: string) => setNewTime(val)}
                             format="12h"
                             withDropdown
                         />
                     </Group>
-                    <Textarea label="Notes" value={newNotes} onChange={(e) => setNewNotes(e.currentTarget.value)} />
-                    <Button fullWidth onClick={handleReschedule} loading={loading}>Save Changes</Button>
+                    <Textarea
+                        label="Notes"
+                        value={newNotes}
+                        onChange={(e) => setNewNotes(e.currentTarget.value)}
+                    />
+                    <Button fullWidth onClick={handleReschedule} loading={loading}>
+                        Save Changes
+                    </Button>
                 </Stack>
             </Modal>
         </Stack>
