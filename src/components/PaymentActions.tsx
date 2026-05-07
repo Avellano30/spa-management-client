@@ -19,7 +19,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const [rescheduleModal, setRescheduleModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
     const [newDate, setNewDate] = useState<Date | null>(null);
-    const [newTime, setNewTime] = useState<string | undefined>(undefined);
+    const [newTime, setNewTime] = useState<string>(""); // Initialize as empty string for Type safety
     const [newNotes, setNewNotes] = useState("");
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
 
@@ -60,7 +60,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             showNotification({
                 color: "red",
                 title: "Error",
-                message: "Something went wrong with the payment initiation."
+                message: "Payment could not be initiated."
             });
         } finally {
             setLoading(false);
@@ -88,9 +88,14 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     const handleReschedule = async () => {
         if (!newDate || !newTime) {
-            showNotification({ color: "red", title: "Missing Info", message: "Select date and time." });
+            showNotification({
+                color: "red",
+                title: "Missing Info",
+                message: "Select date and time."
+            });
             return;
         }
+
         setLoading(true);
         try {
             const dateString = newDate.toISOString().split('T')[0];
@@ -159,7 +164,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-            {/* MODALS */}
             <Modal opened={cancelModal} onClose={() => setCancelModal(false)} title="Confirm Cancellation" centered size="sm">
                 <Stack>
                     <Text size="sm">Are you sure you want to cancel?</Text>
@@ -177,11 +181,29 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Stack>
             </Modal>
 
-            <Modal opened={rescheduleModal} onClose={() => setRescheduleModal(false)} title="Reschedule Appointment" centered size="md">
+            <Modal
+                opened={rescheduleModal}
+                onClose={() => setRescheduleModal(false)}
+                title="Reschedule Appointment"
+                centered
+                size="md"
+            >
                 <Stack gap="md">
                     <Group grow>
-                        <DateInput label="New Date" value={newDate} onChange={setNewDate} minDate={new Date()} />
-                        <TimePicker label="New Start Time" value={newTime} onChange={setNewTime} format="12h" withDropdown />
+                        <DateInput
+                            label="New Date"
+                            placeholder="Pick a date"
+                            value={newDate}
+                            onChange={setNewDate}
+                            minDate={new Date()}
+                        />
+                        <TimePicker
+                            label="New Start Time"
+                            value={newTime}
+                            onChange={(event) => setNewTime(event.currentTarget.value)}
+                            format="12h"
+                            withDropdown
+                        />
                     </Group>
                     <Textarea label="Notes" value={newNotes} onChange={(e) => setNewNotes(e.currentTarget.value)} />
                     <Button fullWidth onClick={handleReschedule} loading={loading}>Save Changes</Button>
