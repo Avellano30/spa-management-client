@@ -7,8 +7,6 @@ import {
     Stack,
     Text,
     Textarea,
-    Card,
-    Divider
 } from "@mantine/core";
 import { DateInput, TimePicker } from "@mantine/dates";
 import { showNotification } from "@mantine/notifications";
@@ -20,7 +18,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const [loading, setLoading] = useState(false);
     const [rescheduleModal, setRescheduleModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
-    const [newDate, setNewDate] = useState<string | null>(null);
+    const [newDate, setNewDate] = useState<Date | null>(null);
     const [newTime, setNewTime] = useState<string | undefined>(undefined);
     const [newNotes, setNewNotes] = useState("");
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
@@ -63,8 +61,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         } catch (err: any) {
             showNotification({
                 color: "red",
-                title: "Payment Error",
-                message: err.message || "Failed to create payment session",
+                title: "Error",
+                message: "Something went wrong"
             });
         } finally {
             setLoading(false);
@@ -98,7 +96,10 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         }
         setLoading(true);
         try {
-            await rescheduleAppointment(appointment._id, newDate, newTime, newNotes);
+            // Converts Date object to YYYY-MM-DD string
+            const formattedDate = newDate.toISOString().split('T')[0];
+            await rescheduleAppointment(appointment._id, formattedDate, newTime, newNotes);
+
             showNotification({ color: "blue", title: "Rescheduled", message: "Successfully moved." });
             setRescheduleModal(false);
             refresh();
@@ -111,7 +112,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     return (
         <Stack gap="xs" align="stretch" className="w-full">
-            {/* 1. PAYMENT BUTTONS (Only for Pending/Approved) */}
+            {/* 1. PAYMENT BUTTONS */}
             {appointment.status === "Pending" && (
                 <Button
                     size="xs"
@@ -139,7 +140,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             )}
 
 
-            {/* 3. MANAGEMENT ACTIONS */}
+            {/* 2. MANAGEMENT ACTIONS */}
             {canReschedule && (
                 <Button
                     size="xs"
@@ -184,7 +185,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Stack>
             </Modal>
 
-            <Modal opened={rescheduleModal} onClose={() => setRescheduleModal(false)} title="Reschedule Appointment" centered size="md">
+            <Modal opened={rescheduleModal} onClose={() => setOpened(false)} title="Reschedule Appointment" centered size="md">
                 <Group grow mb="md">
                     <DateInput label="New Date" value={newDate} onChange={setNewDate} minDate={new Date()} />
                     <TimePicker label="New Start Time" value={newTime} onChange={setNewTime} format="12h" withDropdown />
