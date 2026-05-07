@@ -123,8 +123,13 @@ function Layout({ children }: { children: React.ReactNode }) {
 
                         <Stack gap="xs">
                             <Stack gap={0}>
-                                <Text size="xs" fw={700} c="dimmed" tt="uppercase">Current Time</Text>
-                                <Text size="xl" fw={800} ff="monospace">{currentTime.format("h:mm:ss A")}</Text>
+                                <Text
+                                    size="xl"
+                                    fw={800}
+                                    style={{ fontVariantNumeric: 'tabular-nums' }} // Double {{ }} are required
+                                >
+                                    {currentTime.format("h:mm:ss A")}
+                                </Text>
                             </Stack>
 
                             <Group justify="space-between" align="flex-end">

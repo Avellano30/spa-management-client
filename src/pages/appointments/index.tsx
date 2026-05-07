@@ -31,13 +31,16 @@ const formatTime = (time: string) => {
 };
 
 const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    Completed: "green",
-    Approved: "blue",
-    Pending: "yellow",
-    Cancelled: "red",
-  };
-  return colors[status] || "orange";
+    switch (status) {
+        case "Pending": return "yellow";
+        case "Approved": return "blue";
+        case "Rescheduled": return "orange";
+        case "Completed": return "green";
+        case "Cancelled": return "red";
+        // Setting Refunded to gray as requested
+        case "Refunded": return "gray";
+        default: return "gray";
+    }
 };
 
 const groupByDate = (appointments: Appointment[]) =>
@@ -88,19 +91,24 @@ export default function Appointments() {
 
   const grouped = groupByDate(appointments);
 
-  const needsAction = (items: Appointment[]) =>
-    items.some((a) => {
-      if (a.status === "Pending") return true;
-      const totalPaid = a.payments
-        ?.filter((p: any) => p.status === "Completed")
-        .reduce((sum: number, p: any) => sum + p.amount, 0);
-      const remaining =
-        a.services.reduce((sum, s) => sum + s.service.price, 0) -
-        (totalPaid || 0);
-      return (
-        remaining > 0 && a.status !== "Cancelled" && a.status !== "Completed"
-      );
-    });
+    const needsAction = (items: Appointment[]) =>
+        items.some((a) => {
+            // 1. If it's still pending, it needs action (approval/payment)
+            if (a.status === "Pending") return true;
+
+            // 2. Calculate if there is a remaining balance
+            const totalPaid = a.payments
+                ?.filter((p: any) => p.status === "Completed")
+                .reduce((sum: number, p: any) => sum + p.amount, 0);
+
+            const totalCost = a.services.reduce((sum, s) => sum + s.service.price, 0);
+            const remaining = totalCost - (totalPaid || 0);
+
+            // 3. Mark as action required if there's a balance AND it's a "live" appointment
+            const isActive = ["Approved", "Rescheduled"].includes(a.status);
+
+            return remaining > 0 && isActive;
+        });
 
   return (
     <>

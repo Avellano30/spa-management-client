@@ -7,6 +7,8 @@ import {
     Stack,
     Text,
     Textarea,
+    Card,
+    Divider
 } from "@mantine/core";
 import { DateInput, TimePicker } from "@mantine/dates";
 import { showNotification } from "@mantine/notifications";
@@ -27,17 +29,17 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         getSpaSettings().then(setSpaSettings).catch(console.error);
     }, []);
 
-    const nextType = getNextPaymentType(appointment.payments);
+    // --- Safe Data Extraction ---
+    const nextType = getNextPaymentType(appointment.payments || []);
 
-    // --- Payment Calculations ---
-    const totalPaid = appointment.payments
+    const totalPaid = (appointment.payments || [])
         .filter((p: any) => p.status === "Completed")
         .reduce((sum: number, p: any) => sum + p.amount, 0);
 
-    const servicePrice = appointment.services?.reduce(
+    const servicePrice = (appointment.services || []).reduce(
         (sum: number, s: any) => sum + (s.service?.price || 0),
         0
-    ) || 0;
+    );
 
     const remaining = Math.max(servicePrice - totalPaid, 0);
     const downpaymentPercent = spaSettings?.downPayment ?? 30;
@@ -45,14 +47,14 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     // --- Time Validation ---
     const appointmentStart = new Date(appointment.date);
-    const [startHour, startMinute] = appointment.startTime.split(":").map(Number);
+    const [startHour, startMinute] = (appointment.startTime || "00:00").split(":").map(Number);
     appointmentStart.setHours(startHour, startMinute, 0, 0);
 
     const canReschedule =
         ["Approved", "Rescheduled"].includes(appointment.status) &&
         appointmentStart.getTime() - Date.now() > 24 * 60 * 60 * 1000;
 
-    // --- Handle Payment ---
+    // --- Handlers ---
     const handlePay = async (type: "Downpayment" | "Balance" | "Full") => {
         setLoading(true);
         try {
@@ -69,75 +71,48 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         }
     };
 
-    // --- Handle Cancel (Fixed logic and closed properly) ---
     const handleCancel = async () => {
         if (!newNotes.trim()) {
-            showNotification({
-                color: "red",
-                title: "Missing Notes",
-                message: "Please provide a reason for cancellation.",
-            });
+            showNotification({ color: "red", title: "Missing Notes", message: "Please provide a reason." });
             return;
         }
-
         setLoading(true);
         try {
-            await cancelAppointment(appointment._id, newNotes);
-            showNotification({
-                color: "green",
-                title: "Cancelled",
-                message: "Your appointment has been cancelled.",
-            });
+            await cancelAppointment(appointment._id, newNotes, true);
+
+            showNotification({ color: "green", title: "Cancelled", message: "Appointment cancelled and refund processed." });
             setCancelModal(false);
             setNewNotes("");
             refresh();
         } catch (err: any) {
-            showNotification({
-                color: "red",
-                title: "Error",
-                message: err.message || "Failed to cancel appointment",
-            });
+            showNotification({ color: "red", title: "Error", message: err.message });
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Handle Reschedule ---
     const handleReschedule = async () => {
         if (!newDate || !newTime) {
-            showNotification({
-                color: "red",
-                title: "Missing Info",
-                message: "Please select both date and time.",
-            });
+            showNotification({ color: "red", title: "Missing Info", message: "Select date and time." });
             return;
         }
-
         setLoading(true);
         try {
             await rescheduleAppointment(appointment._id, newDate, newTime, newNotes);
-            showNotification({
-                color: "blue",
-                title: "Rescheduled",
-                message: "Appointment successfully rescheduled",
-            });
+            showNotification({ color: "blue", title: "Rescheduled", message: "Successfully moved." });
             setRescheduleModal(false);
             refresh();
         } catch (err: any) {
-            showNotification({
-                color: "red",
-                title: "Error",
-                message: err.message || "Failed to reschedule appointment",
-            });
+            showNotification({ color: "red", title: "Error", message: err.message });
         } finally {
             setLoading(false);
         }
     };
 
-    // --- View: Pending ---
-    if (appointment.status === "Pending") {
-        return (
-            <Stack gap="xs" align="stretch" className="w-full">
+    return (
+        <Stack gap="xs" align="stretch" className="w-full">
+            {/* 1. PAYMENT BUTTONS (Only for Pending/Approved) */}
+            {appointment.status === "Pending" && (
                 <Button
                     size="xs"
                     color="green"
@@ -148,13 +123,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 >
                     {loading ? "Processing..." : `Pay ₱${downpaymentAmount.toFixed(2)} (Downpayment)`}
                 </Button>
-            </Stack>
-        );
-    }
+            )}
 
-    // --- View: Default (Approved, etc.) ---
-    return (
-        <Stack gap="xs" align="stretch" className="w-full">
             {nextType && appointment.status === "Approved" && remaining > 0 && (
                 <Button
                     size="xs"
@@ -168,6 +138,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
+
+            {/* 3. MANAGEMENT ACTIONS */}
             {canReschedule && (
                 <Button
                     size="xs"
@@ -181,7 +153,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-            {!["Cancelled", "Completed"].includes(appointment.status) && (
+            {!["Cancelled", "Completed", "Refunded"].includes(appointment.status) && (
                 <Button
                     size="xs"
                     color="red"
@@ -194,53 +166,31 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-            {/* CANCEL MODAL */}
-            <Modal
-                opened={cancelModal}
-                onClose={() => setCancelModal(false)}
-                title="Confirm Cancellation"
-                centered
-                size="sm"
-            >
+            {/* MODALS */}
+            <Modal opened={cancelModal} onClose={() => setCancelModal(false)} title="Confirm Cancellation" centered size="sm">
                 <Stack>
-                    <Text size="sm">Are you sure you want to cancel your appointment?</Text>
+                    <Text size="sm">Are you sure you want to cancel?</Text>
                     <Textarea
                         label="Cancellation Notes"
-                        placeholder="Please provide a reason for cancellation"
-                        minRows={3}
+                        placeholder="Reason..."
                         value={newNotes}
                         onChange={(e) => setNewNotes(e.currentTarget.value)}
                         required
                     />
                     <Group grow mt="md">
                         <Button color="gray" variant="outline" onClick={() => setCancelModal(false)}>Go Back</Button>
-                        <Button color="red" onClick={handleCancel} loading={loading} disabled={!newNotes.trim()}>Yes, Cancel</Button>
+                        <Button color="red" onClick={handleCancel} loading={loading}>Yes, Cancel</Button>
                     </Group>
                 </Stack>
             </Modal>
 
-            {/* RESCHEDULE MODAL */}
-            <Modal
-                opened={rescheduleModal}
-                onClose={() => setRescheduleModal(false)}
-                title={`Reschedule: ${appointment?.serviceId?.name || ""}`}
-                centered
-                size="md"
-            >
-                <Text size="sm" mb="sm" c="dimmed">Choose a new date and time.</Text>
+            <Modal opened={rescheduleModal} onClose={() => setRescheduleModal(false)} title="Reschedule Appointment" centered size="md">
                 <Group grow mb="md">
                     <DateInput label="New Date" value={newDate} onChange={setNewDate} minDate={new Date()} />
                     <TimePicker label="New Start Time" value={newTime} onChange={setNewTime} format="12h" withDropdown />
                 </Group>
-                <Textarea
-                    label="Notes (optional)"
-                    placeholder="Add notes..."
-                    minRows={3}
-                    value={newNotes}
-                    onChange={(e) => setNewNotes(e.currentTarget.value)}
-                    mb="md"
-                />
-                <Button fullWidth onClick={handleReschedule} loading={loading} disabled={!newDate || !newTime}>Save Changes</Button>
+                <Textarea label="Notes" value={newNotes} onChange={(e) => setNewNotes(e.currentTarget.value)} mb="md" />
+                <Button fullWidth onClick={handleReschedule} loading={loading}>Save Changes</Button>
             </Modal>
         </Stack>
     );

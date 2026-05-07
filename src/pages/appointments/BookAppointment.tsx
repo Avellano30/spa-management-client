@@ -119,12 +119,13 @@ export default function BookAppointment() {
             if (!date) return;
             try {
                 // ✅ Fetch both Approved AND Pending appointments
-                const [approved, pending] = await Promise.all([
+                const [approved, pending, rescheduled] = await Promise.all([
                     getAppointments({ status: "Approved" }),
                     getAppointments({ status: "Pending" }),
+                    getAppointments({ status: "Rescheduled" }),
                 ]);
 
-                const allActiveBookings = [...approved, ...pending];
+                const allActiveBookings = [...approved, ...pending, ...rescheduled];
                 setAppointments(allActiveBookings);
 
                 const conflictingBookings = allActiveBookings.filter((item) => {
