@@ -18,8 +18,10 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const [loading, setLoading] = useState(false);
     const [rescheduleModal, setRescheduleModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
-    const [newDate, setNewDate] = useState<Date | null>(null);
-    const [newTime, setNewTime] = useState<string>(""); // Initialize as empty string for Type safety
+
+    // Fixed: Keep state as Date | null for the component, but we will convert it for the API
+    const [newDate, setNewDate] = useState<any>(null);
+    const [newTime, setNewTime] = useState<string>("");
     const [newNotes, setNewNotes] = useState("");
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
 
@@ -27,7 +29,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         getSpaSettings().then(setSpaSettings).catch(console.error);
     }, []);
 
-    // --- Calculations ---
     const nextType = getNextPaymentType(appointment.payments || []);
     const totalPaid = (appointment.payments || [])
         .filter((p: any) => p.status === "Completed")
@@ -50,7 +51,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         ["Approved", "Rescheduled"].includes(appointment.status) &&
         appointmentStart.getTime() - Date.now() > 24 * 60 * 60 * 1000;
 
-    // --- Handlers ---
     const handlePay = async (type: "Downpayment" | "Balance" | "Full") => {
         setLoading(true);
         try {
@@ -98,7 +98,10 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
         setLoading(true);
         try {
-            const dateString = newDate.toISOString().split('T')[0];
+            // Conversion to string for API
+            const dateObj = new Date(newDate);
+            const dateString = dateObj.toISOString().split('T')[0];
+
             await rescheduleAppointment(appointment._id, dateString, newTime, newNotes);
             showNotification({ color: "blue", title: "Rescheduled", message: "Successfully moved." });
             setRescheduleModal(false);
@@ -200,7 +203,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                         <TimePicker
                             label="New Start Time"
                             value={newTime}
-                            onChange={(event) => setNewTime(event.currentTarget.value)}
+                            onChange={(val) => setNewTime(val)} // Fixed: value is a string, not an event
                             format="12h"
                             withDropdown
                         />
