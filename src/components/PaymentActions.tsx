@@ -27,9 +27,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         getSpaSettings().then(setSpaSettings).catch(console.error);
     }, []);
 
-    // --- Safe Data Extraction ---
+    // --- Calculations ---
     const nextType = getNextPaymentType(appointment.payments || []);
-
     const totalPaid = (appointment.payments || [])
         .filter((p: any) => p.status === "Completed")
         .reduce((sum: number, p: any) => sum + p.amount, 0);
@@ -43,7 +42,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     const downpaymentPercent = spaSettings?.downPayment ?? 30;
     const downpaymentAmount = servicePrice * (downpaymentPercent / 100);
 
-    // --- Time Validation ---
     const appointmentStart = new Date(appointment.date);
     const [startHour, startMinute] = (appointment.startTime || "00:00").split(":").map(Number);
     appointmentStart.setHours(startHour, startMinute, 0, 0);
@@ -62,7 +60,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             showNotification({
                 color: "red",
                 title: "Error",
-                message: "Something went wrong"
+                message: "Something went wrong with the payment initiation."
             });
         } finally {
             setLoading(false);
@@ -77,8 +75,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         setLoading(true);
         try {
             await cancelAppointment(appointment._id, newNotes, true);
-
-            showNotification({ color: "green", title: "Cancelled", message: "Appointment cancelled and refund processed." });
+            showNotification({ color: "green", title: "Cancelled", message: "Appointment cancelled." });
             setCancelModal(false);
             setNewNotes("");
             refresh();
@@ -96,10 +93,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
         }
         setLoading(true);
         try {
-            // Converts Date object to YYYY-MM-DD string
-            const formattedDate = newDate.toISOString().split('T')[0];
-            await rescheduleAppointment(appointment._id, formattedDate, newTime, newNotes);
-
+            const dateString = newDate.toISOString().split('T')[0];
+            await rescheduleAppointment(appointment._id, dateString, newTime, newNotes);
             showNotification({ color: "blue", title: "Rescheduled", message: "Successfully moved." });
             setRescheduleModal(false);
             refresh();
@@ -112,7 +107,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
 
     return (
         <Stack gap="xs" align="stretch" className="w-full">
-            {/* 1. PAYMENT BUTTONS */}
             {appointment.status === "Pending" && (
                 <Button
                     size="xs"
@@ -139,8 +133,6 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Button>
             )}
 
-
-            {/* 2. MANAGEMENT ACTIONS */}
             {canReschedule && (
                 <Button
                     size="xs"
@@ -185,13 +177,15 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 </Stack>
             </Modal>
 
-            <Modal opened={rescheduleModal} onClose={() => setOpened(false)} title="Reschedule Appointment" centered size="md">
-                <Group grow mb="md">
-                    <DateInput label="New Date" value={newDate} onChange={setNewDate} minDate={new Date()} />
-                    <TimePicker label="New Start Time" value={newTime} onChange={setNewTime} format="12h" withDropdown />
-                </Group>
-                <Textarea label="Notes" value={newNotes} onChange={(e) => setNewNotes(e.currentTarget.value)} mb="md" />
-                <Button fullWidth onClick={handleReschedule} loading={loading}>Save Changes</Button>
+            <Modal opened={rescheduleModal} onClose={() => setRescheduleModal(false)} title="Reschedule Appointment" centered size="md">
+                <Stack gap="md">
+                    <Group grow>
+                        <DateInput label="New Date" value={newDate} onChange={setNewDate} minDate={new Date()} />
+                        <TimePicker label="New Start Time" value={newTime} onChange={setNewTime} format="12h" withDropdown />
+                    </Group>
+                    <Textarea label="Notes" value={newNotes} onChange={(e) => setNewNotes(e.currentTarget.value)} />
+                    <Button fullWidth onClick={handleReschedule} loading={loading}>Save Changes</Button>
+                </Stack>
             </Modal>
         </Stack>
     );
