@@ -128,6 +128,7 @@ export default function AppServices() {
                         <strong>Cancellation & Rescheduling:</strong>
                         <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
                         <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
+                        <br />• You are <strong>ENTITLED</strong> to the <strong>SAME THERAPIST YOU SELECTED.</strong> prior to the rescheduling process.
                         <br />• Cancellations or reschedule requests made less than 24 hours before the appointment may not be accommodated.
 
                         <br />
