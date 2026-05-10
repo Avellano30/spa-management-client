@@ -27,7 +27,7 @@ import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { getAllServices, type Service } from "../../api/services";
 import { getAllEmployees } from "../../api/employees";
-import {  toMinutes } from "../../helpers/timeutils.ts";
+import {  toMinutes } from "../../helpers/timeUtils.ts";
 import {
     confirmAppointment,
     createAppointment,
