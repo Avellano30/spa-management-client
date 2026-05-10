@@ -146,3 +146,16 @@ export const confirmAppointment = async (id: string) => {
   });
   return await res.json();
 };
+export async function getOccupancyData(date: string): Promise<{
+    openingTime: string;
+    closingTime: string;
+    totalRooms: number;
+    bookings: { start: string; end: string }[];
+}> {
+    const res = await fetch(`${endpoint}/appointment/occupancy?date=${date}`);
+    if (!res.ok)
+        throw new Error(
+            (await res.json()).message || "Failed to fetch occupancy data",
+        );
+    return res.json();
+}

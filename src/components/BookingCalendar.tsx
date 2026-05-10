@@ -117,7 +117,20 @@ export default function BookingCalendar({
                     <Title order={3} fw={800}>Availability</Title>
                     <Text size="sm" c="dimmed">Select a date to see available slots</Text>
                 </Stack>
-
+                <Group gap="xs" mt="md" justify="center">
+                    <Group gap={4}>
+                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#40c057' }} />
+                        <Text size="md" c="dimmed">Available</Text>
+                    </Group>
+                    <Group gap={4}>
+                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#f59f00' }} />
+                        <Text size="md" c="dimmed">Limited (1-2 slots)</Text>
+                    </Group>
+                    <Group gap={4}>
+                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#fa5252' }} />
+                        <Text size="md" c="dimmed">Fully Booked</Text>
+                    </Group>
+                </Group>
                 <Group>
                     <SegmentedControl
                         value={view}
@@ -159,14 +172,11 @@ export default function BookingCalendar({
                 }}
                 events={bookings}
                 dateClick={(arg) => {
-                    // 'bookings' is now guaranteed to be an array
                     const eventsOnDate = bookings.filter((event) =>
                         event.start.startsWith(arg.dateStr)
                     ).length;
-
                     const totalRooms = spaSettings?.totalRooms || 0;
                     const availableBeds = totalRooms - eventsOnDate;
-
                     if (onAvailabilityChange) onAvailabilityChange(availableBeds);
                     if (onDateSelect) onDateSelect(arg.dateStr);
                 }}
@@ -183,6 +193,34 @@ export default function BookingCalendar({
                     omitZeroMinute: false
                 }}
                 eventClassNames="client-event-pill"
+                dayCellContent={(arg) => {
+                    const totalRooms = spaSettings?.totalRooms || 0; // 👈 define it here
+                    const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
+                    const booked = bookings.filter((event) =>
+                        event.start.startsWith(dateStr)
+                    ).length;
+                    const available = Math.max(0, totalRooms - booked);
+                    const isPast = dayjs(arg.date).isBefore(dayjs().startOf("day"));
+                    return (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <div>{arg.dayNumberText}</div>
+                            {!isPast && totalRooms > 0 && (
+                                <div style={{
+                                    backgroundColor: available === 0 ? '#fa5252' : available <= 2 ? '#f59f00' : '#40c057',
+                                    color: 'white',
+                                    borderRadius: '999px',
+                                    fontSize: '13px',
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    minWidth: '25px',
+                                    textAlign: 'center',
+                                }}>
+                                    {available === 0 ? 'Full' : available}
+                                </div>
+                            )}
+                        </div>
+                    );
+                }}
             />
         </Card>
     );
