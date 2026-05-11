@@ -10,6 +10,8 @@ import {
     Box,
     Badge,
     SimpleGrid,
+    Alert,
+    ScrollArea
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import type { DateValue } from "@mantine/dates";
@@ -18,12 +20,12 @@ import { cancelAppointment, rescheduleAppointment, getAppointments, getOccupancy
 import { createPaymongoPayment, getNextPaymentType } from "../api/payment";
 import { getSpaSettings, type SpaSettings } from "../api/settings";
 import dayjs from "dayjs";
-
+import { IconAlertTriangle } from "@tabler/icons-react";
 export const PaymentActions = ({ appointment, refresh }: any) => {
     const [loading, setLoading] = useState(false);
     const [rescheduleModal, setRescheduleModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
-
+    const [termsModal, setTermsModal] = useState(false);
     const [newDate, setNewDate] = useState<DateValue>(null);
     const [newTime, setNewTime] = useState<string>("");
     const [newNotes, setNewNotes] = useState("");
@@ -287,32 +289,136 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             )}
 
             {/* Cancel Modal */}
+            {/* Terms Modal */}
+            <Modal
+                opened={termsModal}
+                onClose={() => setTermsModal(false)}
+                title={<Text fw={700} size="lg">Terms & Conditions</Text>}
+                centered
+                size="xl"
+                overlayProps={{ blur: 3, backgroundOpacity: 0.4 }}
+            >
+                <ScrollArea h={450} className="border border-gray-300 p-3 rounded-xl">
+                    <Text size="xl" c="dimmed">
+                        <strong>Booking Policy:</strong>
+                        <br />• A downpayment is required to confirm your booking.
+                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong> only from the <strong>SPA Administrator</strong>.
+                        <br />• Remaining balance must be paid before or on the day of the appointment.
+                        <br />• All appointments are subject to availability and are considered confirmed only after downpayment is received.
+                        <br />• Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
+                        <br />• <strong>Multiple Booking</strong> is allowed but only <strong>(1) TYPE OF SERVICE PER CATEGORY</strong> is permitted.
+                        <br /><br />
+                        <strong>Cancellation & Rescheduling:</strong>
+                        <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
+                        <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
+                        <br />• You are <strong>ENTITLED</strong> to the <strong>SAME THERAPIST YOU SELECTED</strong> prior to the rescheduling process.
+                        <br />• Cancellations or reschedule requests made less than 24 hours before the appointment may not be accommodated.
+                        <br /><br />
+                        <strong>Late Arrival Policy:</strong>
+                        <br />• Arriving more than <strong>15 minutes late</strong> may result in a shortened session to avoid impacting other clients.
+                        <br />• Excessive delays may be treated as a no-show, resulting in forfeiture of any payments made.
+                        <br /><br />
+                        <strong>Health & Safety:</strong>
+                        <br />• Please inform your therapist of any medical conditions, injuries, allergies, or physical limitations before your session.
+                        <br />• The spa reserves the right to decline or modify treatment based on health concerns for client safety.
+                        <br /><br />
+                        <strong>Client Conduct & Etiquette:</strong>
+                        <br />• Respectful behavior toward staff and other clients is required at all times.
+                        <br />• Inappropriate or abusive behavior may result in the immediate termination of the session with no refund.
+                        <br /><br />
+                        <strong>Privacy & Confidentiality:</strong>
+                        <br />• All client information is kept confidential and is used only for booking and service purposes.
+                        <br /><br />
+                        <strong>Agreement:</strong>
+                        <br />• By checking the agreement box and proceeding with the booking, you acknowledge that you have read, understood, and agreed to all terms and conditions listed above.
+                    </Text>
+                </ScrollArea>
+                <Button mt="md" fullWidth onClick={() => setTermsModal(false)} radius="xl">
+                    Close
+                </Button>
+            </Modal>
+
+            {/* Cancel Modal */}
             <Modal
                 opened={cancelModal}
                 onClose={() => setCancelModal(false)}
-                title="Confirm Cancellation"
+                title={<Text fw={700} size="lg">Confirm Cancellation</Text>}
                 centered
-                size="sm"
+                size="md"
+                overlayProps={{ blur: 3, backgroundOpacity: 0.4 }}
             >
-                <Stack>
-                    <Text size="sm">Are you sure you want to cancel?</Text>
+                <Stack gap="md">
+                    {/* Appointment summary */}
+                    {appointment && (
+                        <Box p="sm" style={{ backgroundColor: '#f8f9fa', borderRadius: '10px' }}>
+                            <Text size="xs" c="dimmed" fw={600} mb={4}>CANCELLING APPOINTMENT</Text>
+                            <Text size="sm" fw={600}>
+                                {appointment.services?.map((s: any) => s.service?.name).join(", ")}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                                {new Date(appointment.date).toLocaleDateString()} at {appointment.startTime}
+                            </Text>
+                        </Box>
+                    )}
+
+                    <Alert
+                        variant="light"
+                        color="red"
+                        title={<Text fw={700}>Refund Notice</Text>}
+                        icon={<IconAlertTriangle size={28} stroke={2.5} />}
+                        styles={{
+                            title: { marginBottom: '4px' },
+                            icon: { marginTop: '2px' }
+                        }}
+                    >
+                        <Text size="sm" fw={500} c="red.9">
+                            Your payment will <Text span fw={900} td="underline">NOT</Text> be automatically refunded.
+                            Refunds are processed manually through the spa administrators as per our{" "}
+                            <Text
+                                span
+                                c="blue"
+                                fw={600}
+                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                onClick={() => {
+                                    setCancelModal(false); // 👈 close cancel modal
+                                    setTermsModal(true);   // 👈 open terms modal
+                                }}
+                            >
+                                Terms & Conditions
+                            </Text>.
+                        </Text>
+                    </Alert>
+
                     <Textarea
-                        label="Cancellation Notes"
-                        placeholder="Reason..."
+                        label="Reason for Cancellation"
+                        placeholder="Please tell us why you're cancelling..."
                         onChange={(e) => setNewNotes(e.currentTarget.value)}
                         required
+                        minRows={3}
+                        autosize
+                        styles={{ input: { borderRadius: '10px' } }}
                     />
-                    <Group grow mt="md">
-                        <Button color="gray" variant="outline" onClick={() => setCancelModal(false)}>
+
+                    <Text size="xs" c="dimmed" ta="center">
+                        This action cannot be undone.
+                    </Text>
+
+                    <Group grow>
+                        <Button color="gray" variant="outline" onClick={() => setCancelModal(false)} radius="xl">
                             Go Back
                         </Button>
-                        <Button color="red" onClick={handleCancel} loading={loading}>
+                        <Button
+                            color="red"
+                            onClick={handleCancel}
+                            loading={loading}
+                            radius="xl"
+                            leftSection={<IconAlertTriangle size={16} />}
+                        >
                             Yes, Cancel
                         </Button>
                     </Group>
                 </Stack>
             </Modal>
-
             {/* Reschedule Modal */}
             <Modal
                 opened={rescheduleModal}
@@ -325,6 +431,8 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                 title="Reschedule Appointment"
                 centered
                 size="lg"
+                overlayProps={{ blur: 3, backgroundOpacity: 0.4 }}
+
             >
                 <Stack gap="md">
                     {/* Date Picker */}
