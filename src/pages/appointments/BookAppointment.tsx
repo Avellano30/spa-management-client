@@ -68,7 +68,7 @@ export default function BookAppointment() {
     const [paymentType, setPaymentType] = useState<"Cash" | "Online">("Cash");
     const [paymentMode, setPaymentMode] = useState<"Full" | "Downpayment">("Full");
     const [tempAppointmentIds, setTempAppointmentIds] = useState<string[]>([]);
-
+    const [confirmModal, setConfirmModal] = useState(false);
     const [termsOpened, setTermsOpened] = useState(false);
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
@@ -998,7 +998,114 @@ export default function BookAppointment() {
                                 <Text ta="center" fw={500} c="green">Booking complete!</Text>
                             </Stepper.Completed>
                         </Stepper>
+                        <Modal
+                            opened={confirmModal}
+                            onClose={() => setConfirmModal(false)}
+                            title="Review & Confirm Booking"
+                            centered
+                            size="md"
+                            overlayProps={{ blur: 4 }}
 
+                        >
+                            <Stack gap="md">
+                                {/* Warning Banner */}
+                                <Box
+                                    p="sm"
+                                    style={{
+                                        backgroundColor: "#fff3cd",
+                                        borderRadius: "10px",
+                                        border: "1px solid #ffc107",
+                                    }}
+                                >
+                                    <Text size="sm" fw={700} c="yellow.8">
+                                        ⚠️ Important Notice
+                                    </Text>
+                                    <Text size="sm" c="yellow.9" mt={4}>
+                                        Client-initiated cancellations are <b>non-refundable</b>. Only admin-approved cancellations are eligible for a refund.
+                                    </Text>
+                                </Box>
+
+                                {/* Terms Summary */}
+                                <Box
+                                    p="sm"
+                                    style={{
+                                        backgroundColor: "#f8f9fa",
+                                        borderRadius: "10px",
+                                        border: "1px solid #dee2e6",
+                                    }}
+                                >
+                                    <Text size="md" fw={700} mb="xs">📋 Terms & Conditions Summary</Text>
+                                    <Stack gap={4}>
+                                        <Text size="md" c="dimmed">• A <b>{downPaymentPercent}% downpayment</b> is required to confirm your booking.</Text>
+                                        <Text size="md" c="dimmed">• Remaining <b>{100 - downPaymentPercent}% balance</b> must be paid before or on the day of the appointment.</Text>
+                                        <Text size="md" c="dimmed">• Only <b>2 pending</b> bookings are allowed at a time.</Text>
+                                        <Text size="md" c="dimmed">• Cancellations or reschedule requests made less than <b>24 hours</b> before the appointment may not be accommodated.</Text>
+                                        <Text size="md" c="dimmed">• Arriving more than <b>15 minutes late</b> may result in a shortened session.</Text>
+                                        <Text size="md" c="dimmed">• Inappropriate behavior may result in <b>immediate termination</b> of the session with no refund.</Text>
+                                    </Stack>
+                                    <Text
+                                        size="xs"
+                                        c="blue"
+                                        mt="xs"
+                                        style={{ cursor: "pointer", textDecoration: "underline" }}
+                                        onClick={() => {
+                                            setConfirmModal(false);
+                                            setTermsOpened(true);
+                                        }}
+                                    >
+                                        View full Terms & Conditions
+                                    </Text>
+                                </Box>
+
+                                {/* Booking Summary */}
+                                <Box
+                                    p="sm"
+                                    style={{
+                                        backgroundColor: "#f0faf0",
+                                        borderRadius: "10px",
+                                        border: "1px solid #b2f2bb",
+                                    }}
+                                >
+                                    <Text size="sm" fw={700} mb="xs">🗓 Booking Summary</Text>
+                                    <Group justify="space-between">
+                                        <Text size="xs" c="dimmed">Date</Text>
+                                        <Text size="xs" fw={600}>{date}</Text>
+                                    </Group>
+                                    <Group justify="space-between">
+                                        <Text size="xs" c="dimmed">Time</Text>
+                                        <Group justify="space-between">
+
+                                            <Text size="xs" fw={600}>
+                                                {time ? dayjs(`2026-01-01T${time}`).format("h:mm A") : "-"}
+                                            </Text>
+                                        </Group>                                    </Group>
+                                    <Group justify="space-between">
+                                        <Text size="xs" c="dimmed">Total</Text>
+                                        <Text size="xs" fw={600}>₱{services.reduce((sum, s) => sum + s.service.price, 0).toFixed(2)}</Text>
+                                    </Group>
+                                    <Group justify="space-between">
+                                        <Text size="xs" c="dimmed">Payment</Text>
+                                        <Text size="xs" fw={600}>{paymentType} ({paymentMode})</Text>
+                                    </Group>
+                                </Box>
+
+                                <Group grow mt="xs">
+                                    <Button variant="outline" color="gray" onClick={() => setConfirmModal(false)}>
+                                        Go Back
+                                    </Button>
+                                    <Button
+                                        color="blue"
+                                        loading={loading}
+                                        onClick={() => {
+                                            setConfirmModal(false);
+                                            void handleSubmit();
+                                        }}
+                                    >
+                                        {paymentType === "Online" ? "Proceed to Payment" : "Confirm Booking"}
+                                    </Button>
+                                </Group>
+                            </Stack>
+                        </Modal>
                         {/* Navigation Buttons */}
                         <Group justify="space-between" mt="xl" className="sticky bottom-0 py-4 border-t">
                             {active > 0 && (
@@ -1007,7 +1114,7 @@ export default function BookAppointment() {
                             {active < 2 ? (
                                 <Button onClick={handleNext} loading={loading}>Next</Button>
                             ) : (
-                                <Button loading={loading} onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                <Button loading={loading} onClick={() => setConfirmModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                                     {paymentType === "Online" ? "Proceed to Payment" : "Confirm Booking"}
                                 </Button>
                             )}
