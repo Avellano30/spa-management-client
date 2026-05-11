@@ -273,25 +273,28 @@ export default function SignUp() {
                       type="button"
                       className="bg-blue-600! hover:bg-blue-700! text-white px-4 py-1.5 rounded-md font-bold flex items-center"
                       onClick={async () => {
-                        if (isRegistering) return;
-                        setIsRegistering(true);
-                        await handleRegister({
-                          domain,
-                          form: {
-                            firstName,
-                            lastName,
-                            userName,
-                            email,
-                            password,
-                            phoneNumber,
-                          },
-                          setErrorMessage,
-                          setAuthState,
-                          navigate,
-                          redirect: redirect ?? undefined,
-                          setShake,
-                        });
-                        setIsRegistering(false);
+                          if (isRegistering) return;
+                          setIsRegistering(true);
+                          try {
+                              await handleRegister({
+                                  domain,
+                                  form: {
+                                      firstName,
+                                      lastName,
+                                      userName,
+                                      email,
+                                      password,
+                                      phoneNumber,
+                                  },
+                                  setErrorMessage,
+                                  setAuthState,
+                                  navigate,
+                                  redirect: redirect ?? undefined,
+                                  setShake,
+                              });
+                          } finally {
+                              setIsRegistering(false);
+                          }
                       }}
                     >
                       Register{" "}

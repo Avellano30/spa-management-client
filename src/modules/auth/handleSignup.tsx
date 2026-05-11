@@ -104,6 +104,7 @@ export function showGoogleAuthError() {
  * Returns: Promise<void>
  */
 export async function handleRegister(params: {
+
     domain: string;
     form: {
         firstName: string;
@@ -120,6 +121,8 @@ export async function handleRegister(params: {
     setShake?: (v: boolean) => void;
     authorizationHeader?: string; // optional override for Authorization header
 }) {
+    console.log("handleRegister called"); // ← add this first
+    console.log("form data:", params.form);
     const {
         domain,
         form,
@@ -171,6 +174,8 @@ export async function handleRegister(params: {
         triggerShake();
         return;
     }
+    console.log("domain:", domain);
+    console.log("reaching fetch call"); // ← add this right before fetch
 
     try {
         const response = await fetch(`${domain}/client/sign-up`, {
@@ -190,6 +195,8 @@ export async function handleRegister(params: {
                 phone: phoneDigits, // send raw digits
             }),
         });
+        console.log("response status:", response.status); // ← add this
+        console.log("response ok:", response.ok); // ← add this
 
         if (!response.ok) {
             setErrorMessage("This user already exists");
@@ -198,8 +205,11 @@ export async function handleRegister(params: {
         }
 
         const session = await response.json();
+        console.log("session response:", session); // ← add this
 
         if (!session.token) {
+            // Let the parent know we're done BEFORE navigating
+            if (params.setShake) params.setShake(false);
             navigate(session.redirect);
             return;
         }
