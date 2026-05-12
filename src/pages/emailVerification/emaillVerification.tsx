@@ -4,12 +4,14 @@ import { IconCircleCheck, IconCircleX } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { resendEmailVerification, verifyEmail } from "../../api/emailVerification";
+import { useAuth } from "../../utils/AuthContext";
 
 export default function EmailVerification() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token") || "";
     const email = searchParams.get("email") || "";
     const navigate = useNavigate();
+    const { setAuthState } = useAuth();
 
     const [seconds, setSeconds] = useState(10);
     const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -17,7 +19,16 @@ export default function EmailVerification() {
     useEffect(() => {
         const verify = async () => {
             try {
-                await verifyEmail(token);
+                const data = await verifyEmail(token);
+                // Auto-login after verification
+                if (data.token) {
+                    localStorage.setItem("session", data.token);
+                    setAuthState({
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        email: data.email,
+                    });
+                }
                 setStatus("success");
             } catch (err: any) {
                 setStatus("error");
