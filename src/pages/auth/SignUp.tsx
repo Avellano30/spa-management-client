@@ -84,15 +84,22 @@ export default function SignUp() {
           return;
         }
 
-        const tokens = await response.json();
-        setAuthState({
-          firstName: tokens.firstName,
-          lastName: tokens.lastName,
-          email: tokens.email,
-        });
+          const tokens = await response.json();
 
-        localStorage.setItem("session", tokens.token);
-        navigate(redirect || "/my-appointments");
+        // Handle new user redirect to email verification
+          if (!tokens.token) {
+              navigate(tokens.redirect);
+              return;
+          }
+
+          setAuthState({
+              firstName: tokens.firstName,
+              lastName: tokens.lastName,
+              email: tokens.email,
+          });
+
+          localStorage.setItem("session", tokens.token);
+          navigate(redirect || "/my-appointments");
       } catch (err) {
         console.error("Google auth fetch error", err);
       }
