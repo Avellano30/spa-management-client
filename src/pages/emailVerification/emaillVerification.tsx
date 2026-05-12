@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { resendEmailVerification, verifyEmail } from "../../api/emailVerification";
 import { useAuth } from "../../utils/AuthContext";
+import { getHomepageSettings } from "../../api/settings";
 
 export default function EmailVerification() {
     const [searchParams] = useSearchParams();
@@ -12,10 +13,14 @@ export default function EmailVerification() {
     const email = searchParams.get("email") || "";
     const navigate = useNavigate();
     const { setAuthState } = useAuth();
+    const [spaName, setSpaName] = useState<string>("");
 
     const [seconds, setSeconds] = useState(10);
     const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
+    useEffect(() => {
+        getHomepageSettings().then((s) => setSpaName(s?.brand.name || "")).catch(console.error);
+    }, []);
     useEffect(() => {
         const verify = async () => {
             try {
@@ -30,12 +35,12 @@ export default function EmailVerification() {
                     });
                 }
                 setStatus("success");
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setStatus("error");
                 console.error(err);
                 showNotification({
                     title: "Verification Failed",
-                    message: err?.message || "Invalid or expired token",
+                    message: err instanceof Error ? err.message : "Invalid or expired token",
                     color: "red",
                 });
             }
@@ -63,10 +68,10 @@ export default function EmailVerification() {
                 message: "A new verification email has been sent.",
                 color: "green",
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             showNotification({
                 title: "Failed",
-                message: err?.message || "Error sending verification email",
+                message: err instanceof Error ? err.message : "Error sending verification email",
                 color: "red",
             });
         }
@@ -77,9 +82,8 @@ export default function EmailVerification() {
             <div className="bg-white rounded-xl shadow-md p-10 border border-gray-100">
                 <Stack align="center">
                     <Title order={2} className="text-blue-600 text-center tracking-wide">
-                        Serenity Spa
+                        {spaName}
                     </Title>
-
                     {status === "success" && (
                         <>
                             <IconCircleCheck size={70} stroke={1.5} className="text-green-500" />
