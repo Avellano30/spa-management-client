@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Button, Container, Title, Text, Stack, Divider } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { useSearchParams } from "react-router";
 import { resendEmailVerification } from "../../api/emailVerification";
+import { getHomepageSettings } from "../../api/settings";
 
 export default function ResendEmailVerification() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
   const [loading, setLoading] = useState(false);
+    const [spaName, setSpaName] = useState<string>("");
+
+    useEffect(() => {
+        getHomepageSettings().then((s) => setSpaName(s?.brand.name || "")).catch(console.error);
+    }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -18,12 +24,12 @@ export default function ResendEmailVerification() {
         message: "Please check your inbox for a new verification link.",
         color: "green",
       });
-    } catch (err: any) {
-      showNotification({
-        title: "Error",
-        message: err?.message || "Failed to send verification email.",
-        color: "red",
-      });
+    } catch (err: unknown) {
+        showNotification({
+            title: "Error",
+            message: err instanceof Error ? err.message : "Failed to send verification email.",
+            color: "red",
+        });
     } finally {
       setLoading(false);
     }
@@ -33,9 +39,9 @@ export default function ResendEmailVerification() {
     <Container size="xs" mt={80}>
       <div className="bg-white rounded-xl shadow-md p-10 border border-gray-100">
         <Stack align="center">
-          <Title order={2} className="text-blue-600 text-center tracking-wide">
-            Serenity Spa
-          </Title>
+            <Title order={2} className="text-blue-600 text-center tracking-wide">
+                {spaName}
+            </Title>
 
           <Divider my="xs" w="60%" />
 
