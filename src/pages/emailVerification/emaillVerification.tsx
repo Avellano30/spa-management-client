@@ -37,8 +37,7 @@ export default function EmailVerification() {
         if (status !== "success") return;
 
         const interval = setInterval(() => setSeconds((prev) => prev - 1), 1000);
-        const timeout = setTimeout(() => navigate("/sign-in"), 5000);
-
+        const timeout = setTimeout(() => navigate("/"), 5000);
         return () => {
             clearInterval(interval);
             clearTimeout(timeout);
@@ -84,7 +83,7 @@ export default function EmailVerification() {
                             </Text>
 
                             <Text size="xs" ta="center" className="text-gray-500 mt-2">
-                                Redirecting to sign-in in{" "}
+                                Redirecting to homepage in{" "}
                                 <span className="font-semibold">{seconds}</span> seconds...
                             </Text>
                         </>
