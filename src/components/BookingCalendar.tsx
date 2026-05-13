@@ -112,26 +112,43 @@ export default function BookingCalendar({
 
     return (
         <Card shadow="md" padding="xl" radius="lg" withBorder>
-            <Group justify="space-between" mb="xl">
-                <Stack gap={0}>
-                    <Title order={3} fw={800}>Availability</Title>
-                    <Text size="sm" c="dimmed">Select a date to see available slots</Text>
-                </Stack>
-                <Group gap="xs" mt="md" justify="center">
-                    <Group gap={4}>
-                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#40c057' }} />
-                        <Text size="md" c="dimmed">Available</Text>
-                    </Group>
-                    <Group gap={4}>
-                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#f59f00' }} />
-                        <Text size="md" c="dimmed">Limited (1-2 slots)</Text>
-                    </Group>
-                    <Group gap={4}>
-                        <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#fa5252' }} />
-                        <Text size="md" c="dimmed">Fully Booked</Text>
+            <Stack gap="md" mb="xl">
+                {/* Title */}
+                <Group justify="space-between">
+                    <Stack gap={0}>
+                        <Title order={3} fw={800}>Availability</Title>
+                        <Text size="sm" c="dimmed">Select a date to see available slots</Text>
+                    </Stack>
+                    {/* Navigation */}
+                    <Group gap={5}>
+                        <ActionIcon variant="default" size="lg" onClick={handlePrev} radius="md">
+                            <IconChevronLeft size={18} />
+                        </ActionIcon>
+                        <ActionIcon variant="default" size="lg" onClick={handleToday} radius="md" px="md" style={{ width: 'auto' }}>
+                            <Text size="xs" fw={700}>TODAY</Text>
+                        </ActionIcon>
+                        <ActionIcon variant="default" size="lg" onClick={handleNext} radius="md">
+                            <IconChevronRight size={18} />
+                        </ActionIcon>
                     </Group>
                 </Group>
-                <Group>
+
+                {/* Legend + View Toggle */}
+                <Group justify="space-between" wrap="wrap">
+                    <Group gap="xs" wrap="wrap">
+                        <Group gap={4}>
+                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#40c057' }} />
+                            <Text size="md" c="dimmed">Available</Text>
+                        </Group>
+                        <Group gap={4}>
+                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#f59f00' }} />
+                            <Text size="md" c="dimmed">Limited (1-2 slots)</Text>
+                        </Group>
+                        <Group gap={4}>
+                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#fa5252' }} />
+                            <Text size="md" c="dimmed">Fully Booked</Text>
+                        </Group>
+                    </Group>
                     <SegmentedControl
                         value={view}
                         onChange={handleViewChange}
@@ -141,27 +158,8 @@ export default function BookingCalendar({
                         ]}
                         radius="md"
                     />
-                    <Group gap={5}>
-                        <ActionIcon variant="default" size="lg" onClick={handlePrev} radius="md">
-                            <IconChevronLeft size={18} />
-                        </ActionIcon>
-                        <ActionIcon
-                            variant="default"
-                            size="lg"
-                            onClick={handleToday}
-                            radius="md"
-                            px="md"
-                            style={{ width: 'auto' }}
-                        >
-                            <Text size="xs" fw={700}>TODAY</Text>
-                        </ActionIcon>
-                        <ActionIcon variant="default" size="lg" onClick={handleNext} radius="md">
-                            <IconChevronRight size={18} />
-                        </ActionIcon>
-                    </Group>
                 </Group>
-            </Group>
-
+            </Stack>
             <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

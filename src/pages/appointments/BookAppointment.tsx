@@ -22,6 +22,8 @@ import {
     SimpleGrid,
     Select,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+
 import { jwtDecode } from "jwt-decode";
 import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
@@ -72,6 +74,7 @@ export default function BookAppointment() {
     const [termsOpened, setTermsOpened] = useState(false);
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     const [intensityModal, setIntensityModal] = useState<{
         service: Service;
@@ -517,9 +520,10 @@ export default function BookAppointment() {
 
                     {/* Selected Services Summary */}
                     <Card shadow="md" radius="md" withBorder className="flex-1 overflow-hidden bg-white/80 backdrop-blur-sm">
-                        <Title order={4} mb="md" size={30}>Selected Services</Title>
+                        <Title order={4} mb="md">Selected Services</Title>
+
                         <ScrollArea h={300}>
-                            <SimpleGrid cols={2} spacing="md">
+                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                                 {services.map((selected) => (
                                     <Card key={selected.service._id} withBorder radius="md" mb="sm">
                                         <Group>
@@ -527,18 +531,21 @@ export default function BookAppointment() {
                                                 <Image src={selected.service.imageUrl || "/img/placeholder.jpg"} height="100%" width="100%" fit="contain" alt={selected.service.name} />
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <Text fw={500} size="xl">{selected.service.name}</Text>
-                                                {selected.intensity && <Text size="lg" c="blue">Intensity: {selected.intensity}</Text>}
-                                                <Text size="md" c="dimmed">{selected.service.description}</Text>
-                                                <Group justify="space-between">
-                                                    <Text fw={600} size="sm">₱{selected.service.price}</Text>
+                                                <Text fw={500} size="sm">{selected.service.name}</Text>
+
+                                                {selected.intensity && <Text size="sm" c="blue">Intensity: {selected.intensity}</Text>
+                                                }
+                                                <Text size="sm" c="dimmed">{selected.service.description}</Text>
+
+                                                <Group justify="space-between" mt={15}>
+
                                                     <Text size="sm" c="dimmed">{selected.service.duration} mins</Text>
                                                 </Group>
                                             </div>
                                             <Button
                                                 variant="subtle"
                                                 color="red"
-                                                size="md"
+                                                size="sm"
                                                 onClick={() => setServices((prev) => prev.filter((s) => s.service._id !== selected.service._id))}
                                             >
                                                 Remove
@@ -579,7 +586,7 @@ export default function BookAppointment() {
                             <Stepper.Step label="Select Services">
                                 <Text mb="md">Choose the services you want to book:</Text>
                                 <ScrollArea h={700}>
-                                    <SimpleGrid cols={2} spacing="sm">
+                                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                                         {allServices.map((s) => {
                                             const isSelected = services.some((sel) => sel.service._id === s._id);
                                             return (
@@ -636,7 +643,7 @@ export default function BookAppointment() {
                                 <Group grow mb="md">
                                     <Box mb="md">
                                         <Text fw={600} mb="xs">Massage Therapist</Text>
-                                        <SimpleGrid cols={4} spacing="md">
+                                        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
                                             {employees.map((emp, index) => {
                                                 const statusUnavailable = emp.status === "unavailable";
                                                 const worksThisDay = date ? isEmployeeWorkingOnDay(emp, date) : true;
@@ -695,11 +702,27 @@ export default function BookAppointment() {
 
                                                             setSelectedEmployee(emp._id);
                                                         }}
+                                                        p="xs"
+
                                                     >
-                                                        <Box style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden", borderRadius: 8 }}>
-                                                            <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
-                                                        </Box>
-                                                        <Text ta="center" size="sm" fw={500} mt="xs">{emp.name}</Text>
+                                                        {isMobile ? (
+                                                            // Mobile: horizontal layout
+                                                            <Group gap="sm" wrap="nowrap">
+                                                                <Box style={{ width: 50, height: 50, flexShrink: 0, borderRadius: 8, overflow: 'hidden' }}>
+                                                                    <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
+                                                                </Box>
+                                                                <Text ta="left" size="sm" fw={500}>{emp.name}</Text>
+                                                            </Group>
+                                                        ) : (
+                                                            // Desktop: original square layout
+                                                            <>
+                                                                <Box style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden", borderRadius: 8 }}>
+                                                                    <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
+                                                                </Box>
+                                                                <Text ta="center" size="sm" fw={500} mt="xs">{emp.name}</Text>
+                                                            </>
+                                                        )}
+
                                                         {/*<Badge color={statusUnavailable ? "gray" : canClick ? "green" : "red"} size="sm" mt="xs" fullWidth>*/}
                                                         {/*    {statusUnavailable ? "Unavailable" : isBusy ? "Busy" : !worksThisDay ? "Off-Duty" : "Available"}*/}
                                                         {/*</Badge>*/}
@@ -736,8 +759,7 @@ export default function BookAppointment() {
                                         </Box>
                                     </Box>
                                 </Group>
-                                <Group grow mb="md">
-                                    <Group grow mb="md">
+                                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mb="md">
                                         <Box p="md" style={{ backgroundColor: '#f8f9fa', borderRadius: '14px' }}>
                                             <Group justify="space-between" mb="xs">
                                                 <Text fw={700} size="md" c="dark.3">SELECT DATE</Text>
@@ -747,7 +769,6 @@ export default function BookAppointment() {
                                                     </Badge>
                                                 )}
                                             </Group>
-
                                             <DateInput
                                                 placeholder="Pick a date"
                                                 value={date ? new Date(date) : null}
@@ -796,7 +817,7 @@ export default function BookAppointment() {
                                                 </Group>
                                             )}
                                         </Box>
-                                        <Box mt="md" p="md" style={{ backgroundColor: '#f8f9fa', borderRadius: '14px' }}>
+                                        <Box p="md" style={{ backgroundColor: '#f8f9fa', borderRadius: '14px' }}>
                                             <Group justify="space-between" mb="xs" align="flex-start">
                                                 <div>
                                                     <Text fw={700} size="md" c="dark.3" mb={4}>SELECT TIME</Text>
@@ -928,8 +949,7 @@ export default function BookAppointment() {
                                                 <Badge color="gray" variant="light" size="xs" style={{ opacity: 0.5 }}>Full / Busy</Badge>
                                             </Group>
                                         </Box>
-                                    </Group>
-                                </Group>
+                                </SimpleGrid>
 
                                 <BookingCalendar
                                     employee={employees.find((e) => e._id === selectedEmployee)}
