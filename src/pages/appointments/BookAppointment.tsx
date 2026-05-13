@@ -188,8 +188,7 @@ export default function BookAppointment() {
 
     function isSlotDisabled(checkTime: string): boolean {
         if (!occupancy) return false;
-        const { openingTime, closingTime, totalRooms, bookings, bufferTime } = occupancy;
-        const buffer = bufferTime ?? 15;
+        const { openingTime, closingTime, totalRooms, bookings } = occupancy;
 
         // 1. Business hours check
         const isWithinHours =
@@ -198,34 +197,40 @@ export default function BookAppointment() {
                 : checkTime >= openingTime || checkTime < closingTime;
         if (!isWithinHours) return true;
 
-        // 2. Calculate Proposed Window
-        const totalDuration = services.reduce((sum, s) => sum + s.service.duration, 0);
-        const proposedStartMin = toMinutes(checkTime);
-        const proposedEndMin = proposedStartMin + totalDuration;
-        const proposedClearMin = proposedEndMin + buffer; // When the room is ready for the NEXT person
+        // 2. Cutoff check — service must finish before closing time
+        // 2. Cutoff check
+        const serviceDuration = services.reduce((sum, s) => sum + s.service.duration, 0);
+        const isOvernight = closingTime < openingTime;
+        const baseDate = isOvernight && checkTime < openingTime
+            ? "2026-01-02"  // after midnight = next day
+            : "2026-01-01";
+        const slotStart = dayjs(`${baseDate}T${checkTime}`);
+        const slotEnd = slotStart.add(serviceDuration, 'minute');
+        const adjustedClosing = isOvernight
+            ? dayjs(`2026-01-02T${closingTime}`)
+            : dayjs(`2026-01-01T${closingTime}`);
+        if (slotEnd.isAfter(adjustedClosing)) return true;
 
-        // 3. All rooms full check (Buffer-Aware)
+        // 3. All rooms full check
         const overlapping = bookings.filter(({ start, end }) => {
-            const existStartMin = toMinutes(start);
-            const existEndMin = toMinutes(end);
-            const existClearMin = existEndMin + buffer; // When existing room is ready
-
-            // Overlap if: Proposed Start < Existing Clear AND Proposed Clear > Existing Start
-            return proposedStartMin < existClearMin && proposedClearMin > existStartMin;
+            const check = dayjs(`2026-01-01T${checkTime}`);
+            const s = dayjs(`2026-01-01T${start}`);
+            const e = dayjs(`2026-01-01T${end}`).add(occupancy.bufferTime ?? 15, "minute");
+            return (check.isSame(s) || check.isAfter(s)) && check.isBefore(e);
         }).length;
-
         if (overlapping >= totalRooms) return true;
 
-        // 4. Therapist busy check (Buffer-Aware)
+        // 4. Selected therapist already booked at this time
         if (selectedEmployee) {
             const therapistBusy = appointmentsForDay.some((appt) => {
-                if (appt.employee?._id !== selectedEmployee) return false;
-
-                const existStartMin = toMinutes(appt.startTime);
-                const existEndMin = toMinutes(appt.endTime);
-                const existClearMin = existEndMin + buffer;
-
-                return proposedStartMin < existClearMin && proposedClearMin > existStartMin;
+                const check = dayjs(`2026-01-01T${checkTime}`);
+                const s = dayjs(`2026-01-01T${appt.startTime}`);
+                const e = dayjs(`2026-01-01T${appt.endTime}`).add(occupancy.bufferTime ?? 15, "minute");
+                return (
+                    appt.employee?._id === selectedEmployee &&
+                    (check.isSame(s) || check.isAfter(s)) &&
+                    check.isBefore(e)
+                );
             });
             if (therapistBusy) return true;
         }
