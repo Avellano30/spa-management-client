@@ -159,3 +159,8 @@ export async function getOccupancyData(date: string): Promise<{
         );
     return res.json();
 }
+export async function getMonthlyAvailability(month: string): Promise<Record<string, "open" | "full">> {
+    const res = await fetch(`${endpoint}/appointment/monthly-availability?month=${month}`);
+    if (!res.ok) throw new Error("Failed to fetch monthly availability");
+    return res.json();
+}

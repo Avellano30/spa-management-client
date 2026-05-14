@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Card, Center, Loader, Title, Group, SegmentedControl, ActionIcon, Text, Stack } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
-import { getAppointments } from "../api/appointments";
+import { getAppointments, getMonthlyAvailability } from "../api/appointments";
 import { getSpaSettings, type SpaSettings } from "../api/settings";
 import { showNotification } from "@mantine/notifications";
 import dayjs from "dayjs";
@@ -39,16 +39,37 @@ export default function BookingCalendar({
     const [bookings, setBookings] = useState<BookingEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
-
+    const [monthlyAvailability, setMonthlyAvailability] = useState<Record<string, "open" | "full">>({});
+    const [currentMonth, setCurrentMonth] = useState(dayjs().format("YYYY-MM"));
     useEffect(() => {
         load();
         getSpaSettings().then(setSpaSettings).catch(console.error);
     }, []);
 
-    const handlePrev = () => calendarRef.current?.getApi().prev();
-    const handleNext = () => calendarRef.current?.getApi().next();
-    const handleToday = () => calendarRef.current?.getApi().today();
+    const fetchMonthlyAvailability = async (month: string) => {
+        try {
+            const data = await getMonthlyAvailability(month);
+            setMonthlyAvailability(data);
+        } catch (err) {
+            console.error("Failed to fetch monthly availability", err);
+        }
+    };
+    useEffect(() => {
+        fetchMonthlyAvailability(currentMonth);
+    }, [currentMonth]);
 
+    const handlePrev = () => {
+        calendarRef.current?.getApi().prev();
+        setCurrentMonth(dayjs(currentMonth).subtract(1, 'month').format("YYYY-MM"));
+    };
+    const handleNext = () => {
+        calendarRef.current?.getApi().next();
+        setCurrentMonth(dayjs(currentMonth).add(1, 'month').format("YYYY-MM"));
+    };
+    const handleToday = () => {
+        calendarRef.current?.getApi().today();
+        setCurrentMonth(dayjs().format("YYYY-MM"));
+    };
     const handleViewChange = (newView: string) => {
         setView(newView);
         calendarRef.current?.getApi().changeView(newView);
@@ -190,47 +211,16 @@ export default function BookingCalendar({
                 }}
                 eventClassNames="client-event-pill"
                 dayCellContent={(arg) => {
-                    const totalRooms = spaSettings?.totalRooms || 0;
                     const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
                     const isPast = dayjs(arg.date).isBefore(dayjs().startOf("day"));
-
-                    // Check if any hourly slot has at least 1 free bed
-                    const spaOpen = spaSettings?.openingTime;
-                    const spaClose = spaSettings?.closingTime;
-                    const bufferMins = spaSettings?.bufferTime ?? 15;
-
-                    let hasAvailability = false;
-
-                    if (spaOpen && spaClose && totalRooms > 0) {
-                        let current = dayjs(`${dateStr}T${spaOpen}`);
-                        const closing = dayjs(`${dateStr}T${spaClose}`);
-                        const end = closing.isBefore(current) ? closing.add(1, 'day') : closing;
-
-                        while (current.isBefore(end)) {
-                            const slotTime = current.format("HH:mm");
-                            const overlapping = bookings.filter((event) => {
-                                const eventDate = event.start.split("T")[0];
-                                if (eventDate !== dateStr) return false;
-                                const eventStart = dayjs(event.start);
-                                const eventEnd = dayjs(event.end).add(bufferMins, 'minute');
-                                const slotDayjs = dayjs(`${dateStr}T${slotTime}`);
-                                return (slotDayjs.isSame(eventStart) || slotDayjs.isAfter(eventStart)) && slotDayjs.isBefore(eventEnd);
-                            }).length;
-
-                            if (overlapping < totalRooms) {
-                                hasAvailability = true;
-                                break; // no need to check further
-                            }
-                            current = current.add(1, 'hour');
-                        }
-                    }
+                    const availability = monthlyAvailability[dateStr];
 
                     return (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                             <div>{arg.dayNumberText}</div>
-                            {!isPast && totalRooms > 0 && (
+                            {!isPast && availability && (
                                 <div style={{
-                                    backgroundColor: hasAvailability ? '#40c057' : '#fa5252',
+                                    backgroundColor: availability === "open" ? '#40c057' : '#fa5252',
                                     color: 'white',
                                     borderRadius: '999px',
                                     fontSize: '11px',
@@ -239,7 +229,7 @@ export default function BookingCalendar({
                                     minWidth: '24px',
                                     textAlign: 'center',
                                 }}>
-                                    {hasAvailability ? 'Available' : 'Full'}
+                                    {availability === "open" ? 'Open' : 'Full'}
                                 </div>
                             )}
                         </div>
