@@ -490,7 +490,7 @@ export default function BookAppointment() {
                     onChange={(e) => setTermsChecked(e.currentTarget.checked)}
                     label="I agree to the Terms & Conditions"
                 />
-                <Button mt="md" fullWidth disabled={!termsChecked} onClick={handleContinueAgree}>
+                <Button mt="md" radius="xl" fullWidth disabled={!termsChecked} onClick={handleContinueAgree}>
                     Continue
                 </Button>
             </Modal>
@@ -535,7 +535,7 @@ export default function BookAppointment() {
                     fullWidth
                     color="blue"          // 👈 Sets the color to blue
                     variant="filled"      // 👈 Makes it a solid blue button
-                    radius="lg"
+                    radius="xl"
                     onClick={() => {
                         setTermsReadOnly(false);
                         setConfirmModal(true);

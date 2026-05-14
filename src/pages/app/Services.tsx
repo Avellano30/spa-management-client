@@ -169,6 +169,7 @@ export default function AppServices() {
                     fullWidth
                     disabled={!termsChecked}
                     onClick={handleContinueAgree}
+                    radius="xl"
                 >
                     Continue
                 </Button>
