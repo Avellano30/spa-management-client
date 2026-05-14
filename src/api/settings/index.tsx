@@ -1,5 +1,6 @@
 const endpoint = import.meta.env.VITE_ENDPOINT || 'http://localhost:3000';
 
+// Added this back to fix TS2304
 export interface HomepageSettings {
     brand: {
         name: string;
@@ -15,8 +16,8 @@ export interface HomepageSettings {
         description?: string;
         bodyDescription?: string;
     };
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string; // Changed to string to match JSON response
+    updatedAt: string;
 }
 
 export interface SpaSettings {
@@ -30,17 +31,17 @@ export interface SpaSettings {
     updatedAt?: string;
 }
 
-export async function getSpaSettings(): Promise<SpaSettings | null> {
-    const res = await fetch(`${endpoint}/settings`);
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error('Failed to fetch spa settings');
-    return res.json();
+async function safeFetch<T>(url: string): Promise<T | null> {
+    try {
+        const res = await fetch(url);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`Fetch failed: ${res.statusText}`);
+        return await res.json();
+    } catch (err) {
+        console.error(`Error fetching from ${url}:`, err);
+        return null;
+    }
 }
 
-// Fetch homepage settings (JSON)
-export async function getHomepageSettings(): Promise<HomepageSettings | null> {
-    const res = await fetch(`${endpoint}/homepage-settings`);
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error('Failed to fetch homepage settings');
-    return res.json();
-}
+export const getSpaSettings = () => safeFetch<SpaSettings>(`${endpoint}/settings`);
+export const getHomepageSettings = () => safeFetch<HomepageSettings>(`${endpoint}/homepage-settings`);

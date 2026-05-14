@@ -136,17 +136,15 @@ export default function BookingCalendar({
                 {/* Legend + View Toggle */}
                 <Group justify="space-between" wrap="wrap">
                     <Group gap="xs" wrap="wrap">
-                        <Group gap={4}>
-                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#40c057' }} />
-                            <Text size="md" c="dimmed">Available</Text>
-                        </Group>
-                        <Group gap={4}>
-                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#f59f00' }} />
-                            <Text size="md" c="dimmed">Limited (1-2 slots)</Text>
-                        </Group>
-                        <Group gap={4}>
-                            <div style={{ width: 15, height: 15, borderRadius: '50%', backgroundColor: '#fa5252' }} />
-                            <Text size="md" c="dimmed">Fully Booked</Text>
+                        <Group gap="md" mt="md" justify="center">
+                            <Group gap={4}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#40c057' }} />
+                                <Text size="xs" c="dimmed">Available</Text>
+                            </Group>
+                            <Group gap={4}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#fa5252' }} />
+                                <Text size="xs" c="dimmed">Fully Booked</Text>
+                            </Group>
                         </Group>
                     </Group>
                     <SegmentedControl
@@ -192,28 +190,56 @@ export default function BookingCalendar({
                 }}
                 eventClassNames="client-event-pill"
                 dayCellContent={(arg) => {
-                    const totalRooms = spaSettings?.totalRooms || 0; // 👈 define it here
+                    const totalRooms = spaSettings?.totalRooms || 0;
                     const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
-                    const booked = bookings.filter((event) =>
-                        event.start.startsWith(dateStr)
-                    ).length;
-                    const available = Math.max(0, totalRooms - booked);
                     const isPast = dayjs(arg.date).isBefore(dayjs().startOf("day"));
+
+                    // Check if any hourly slot has at least 1 free bed
+                    const spaOpen = spaSettings?.openingTime;
+                    const spaClose = spaSettings?.closingTime;
+                    const bufferMins = spaSettings?.bufferTime ?? 15;
+
+                    let hasAvailability = false;
+
+                    if (spaOpen && spaClose && totalRooms > 0) {
+                        let current = dayjs(`${dateStr}T${spaOpen}`);
+                        const closing = dayjs(`${dateStr}T${spaClose}`);
+                        const end = closing.isBefore(current) ? closing.add(1, 'day') : closing;
+
+                        while (current.isBefore(end)) {
+                            const slotTime = current.format("HH:mm");
+                            const overlapping = bookings.filter((event) => {
+                                const eventDate = event.start.split("T")[0];
+                                if (eventDate !== dateStr) return false;
+                                const eventStart = dayjs(event.start);
+                                const eventEnd = dayjs(event.end).add(bufferMins, 'minute');
+                                const slotDayjs = dayjs(`${dateStr}T${slotTime}`);
+                                return (slotDayjs.isSame(eventStart) || slotDayjs.isAfter(eventStart)) && slotDayjs.isBefore(eventEnd);
+                            }).length;
+
+                            if (overlapping < totalRooms) {
+                                hasAvailability = true;
+                                break; // no need to check further
+                            }
+                            current = current.add(1, 'hour');
+                        }
+                    }
+
                     return (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                             <div>{arg.dayNumberText}</div>
                             {!isPast && totalRooms > 0 && (
                                 <div style={{
-                                    backgroundColor: available === 0 ? '#fa5252' : available <= 2 ? '#f59f00' : '#40c057',
+                                    backgroundColor: hasAvailability ? '#40c057' : '#fa5252',
                                     color: 'white',
                                     borderRadius: '999px',
-                                    fontSize: '13px',
+                                    fontSize: '11px',
                                     fontWeight: 700,
                                     padding: '2px 8px',
-                                    minWidth: '25px',
+                                    minWidth: '24px',
                                     textAlign: 'center',
                                 }}>
-                                    {available === 0 ? 'Full' : available}
+                                    {hasAvailability ? 'Available' : 'Full'}
                                 </div>
                             )}
                         </div>
