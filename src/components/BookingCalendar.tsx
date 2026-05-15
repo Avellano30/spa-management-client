@@ -41,20 +41,30 @@ export default function BookingCalendar({
     const [spaSettings, setSpaSettings] = useState<SpaSettings | null>(null);
     const [monthlyAvailability, setMonthlyAvailability] = useState<Record<string, "open" | "full">>({});
     const [currentMonth, setCurrentMonth] = useState(dayjs().format("YYYY-MM"));
-    useEffect(() => {
-        load();
-        getSpaSettings().then(setSpaSettings).catch(console.error);
-    }, []);
+    const isMounted = useRef(false);
 
     const fetchMonthlyAvailability = async (month: string) => {
         try {
             const data = await getMonthlyAvailability(month);
+            console.log("API returned:", JSON.stringify(data).slice(0, 300));
             setMonthlyAvailability(data);
         } catch (err) {
             console.error("Failed to fetch monthly availability", err);
         }
     };
+
+
     useEffect(() => {
+        load();
+        getSpaSettings().then(setSpaSettings).catch(console.error);
+        fetchMonthlyAvailability(currentMonth);
+    }, []);
+
+    useEffect(() => {
+        if (!isMounted.current) {
+            isMounted.current = true;
+            return;
+        }
         fetchMonthlyAvailability(currentMonth);
     }, [currentMonth]);
 
@@ -180,6 +190,7 @@ export default function BookingCalendar({
                 </Group>
             </Stack>
             <FullCalendar
+                key={Object.keys(monthlyAvailability).length > 0 ? "loaded" : "loading"}
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
