@@ -46,7 +46,6 @@ export default function BookingCalendar({
     const fetchMonthlyAvailability = async (month: string) => {
         try {
             const data = await getMonthlyAvailability(month);
-            console.log("API returned:", JSON.stringify(data).slice(0, 300));
             setMonthlyAvailability(data);
         } catch (err) {
             console.error("Failed to fetch monthly availability", err);
@@ -87,7 +86,6 @@ export default function BookingCalendar({
 
     const load = async () => {
         try {
-            console.log("1. Load started...");
             const [approved, rescheduled, pending] = await Promise.all([
                 getAppointments({ status: "Approved" }),
                 getAppointments({ status: "Rescheduled" }),
@@ -95,10 +93,8 @@ export default function BookingCalendar({
             ]);
 
             const data = [...approved, ...rescheduled, ...pending];
-            console.log("2. Raw data from API:", data); // Check if startTime here has minutes!
 
             const formatted: BookingEvent[] = data.map((item) => {
-                console.log(`3. Mapping ${item._id}: ${item.startTime}`);
 
                 const [date] = item.date.split("T");
                 const start12 = to12Hour(item.startTime);
@@ -115,7 +111,6 @@ export default function BookingCalendar({
 
             setBookings(formatted);
         } catch (err: any) {
-            console.error("4. Load Error:", err);
             showNotification({ color: "red", title: "Error", message: err.message });
         } finally {
             setLoading(false);
