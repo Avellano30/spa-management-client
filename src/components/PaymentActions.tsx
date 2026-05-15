@@ -74,7 +74,16 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     // ── Slot logic ─────────────────────────────────────────────────────────────
 
     function isSlotDisabled(checkTime: string): boolean {
+        // Past-time check — always runs regardless of occupancy
+        const isToday = dayjs(newDate as Date).isSame(dayjs(), "day");
+        if (isToday) {
+            const now = dayjs();
+            const slotTime = dayjs(`${dayjs().format("YYYY-MM-DD")}T${checkTime}`);
+            if (slotTime.isBefore(now)) return true;
+        }
+
         if (!occupancy) return false;
+
         const { openingTime, closingTime, totalRooms, bookings } = occupancy;
 
         // 1. Business hours check

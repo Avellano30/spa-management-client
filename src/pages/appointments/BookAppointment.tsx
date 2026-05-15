@@ -187,6 +187,12 @@ export default function BookAppointment() {
     // ── Helper functions ───────────────────────────────────────────────────────
 
     function isSlotDisabled(checkTime: string): boolean {
+        const isToday = dayjs(date).isSame(dayjs(), "day");
+        if (isToday) {
+            const now = dayjs();
+            const slotTime = dayjs(`${dayjs().format("YYYY-MM-DD")}T${checkTime}`);
+            if (slotTime.isBefore(now)) return true;
+        }
         if (!occupancy) return false;
         const { openingTime, closingTime, totalRooms, bookings } = occupancy;
 
