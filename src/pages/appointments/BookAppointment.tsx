@@ -792,7 +792,7 @@ export default function BookAppointment() {
                                                         <Text fw={600} size="lg">₱{s.price}</Text>
                                                         <Text size="lg" c="dimmed">{s.duration} mins</Text>
                                                     </Group>
-                                                    {isSelected && <Badge color="green" size="sm" mt="xs">Selected</Badge>}
+                                                    {isSelected && <Badge color="green" size="sm" mt="xs" fullWidth variant="light">Selected</Badge>}
                                                 </Card>
                                             );
                                         })}

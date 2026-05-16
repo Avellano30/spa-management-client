@@ -226,7 +226,7 @@ export default function BookingCalendar({
                             <div>{arg.dayNumberText}</div>
                             {!isPast && availability && (
                                 <div style={{
-                                    backgroundColor: availability === "open" ? '#4fc41d' : '#f44336',
+                                    backgroundColor: availability === "open" ? '#38D830' : '#f44336',
                                     color: 'white',
                                     borderRadius: '999px',
                                     fontSize: '11px',
