@@ -176,7 +176,6 @@ function Layout({ children }: { children: React.ReactNode }) {
                     <Stack gap={4}>{items}</Stack>
                 </ScrollArea>
 
-                <Divider my="sm" />
 
                 {/* LOGOUT */}
                 <NavLink

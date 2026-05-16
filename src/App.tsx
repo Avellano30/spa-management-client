@@ -114,11 +114,10 @@ export default function AppLayout() {
                         </div>
 
                         {/* ── CENTER: Nav Links ── */}
-                        <nav
+                        <div
                             className="hidden sm:flex"
                             style={{
                                 flex: 1,
-                                display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: 2,
@@ -182,7 +181,7 @@ export default function AppLayout() {
                                     </button>
                                 );
                             })}
-                        </nav>
+                        </div>
 
                         {/* ── RIGHT: Actions ── */}
                         <div
