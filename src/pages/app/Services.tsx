@@ -204,10 +204,7 @@ export default function AppServices() {
                     </Badge>
                 </Group>
                 <Title order={2} className={classes.title} ta="center" mt="sm">
-                    Our{' '}
-                    <em style={{ fontStyle: 'italic', color: 'var(--mantine-color-blue-6)' }}>
-                        Services
-                    </em>
+                    Our <span style={{ color: 'var(--mantine-color-blue-6)' }}>Services</span>
                 </Title>
                 <Text c="dimmed" className={classes.description} ta="center" mt="md">
                     Browse our range of luxurious treatments and book the perfect experience to unwind and rejuvenate.

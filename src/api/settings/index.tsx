@@ -12,7 +12,8 @@ export interface HomepageSettings {
         address?: string;
     };
     content: {
-        heading?: string;
+        heading?: string;        // "Discover your path to"
+        subHeading?: string;     // "total relaxation"
         description?: string;
         bodyDescription?: string;
     };

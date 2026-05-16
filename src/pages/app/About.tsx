@@ -71,10 +71,7 @@ export default function AppAbout() {
                 </Group>
 
                 <Title order={2} className={classes.title} ta="center" mt="sm">
-                    About{' '}
-                    <em style={{ fontStyle: 'italic', color: 'var(--mantine-color-blue-6)' }}>
-                        Us
-                    </em>
+                    About <span style={{ color: 'var(--mantine-color-blue-6)' }}>Us</span>
                 </Title>
 
                 <Text c="dimmed" className={classes.description} ta="center" mt="md">
@@ -82,10 +79,7 @@ export default function AppAbout() {
                 </Text>
 
                 <Title order={2} className={classes.title} ta="center" mt={60}>
-                    Contact{' '}
-                    <em style={{ fontStyle: 'italic', color: 'var(--mantine-color-blue-6)' }}>
-                        Us
-                    </em>
+                    Contact <span style={{ color: 'var(--mantine-color-blue-6)' }}>Us</span>
                 </Title>
 
                 <Text c="dimmed" className={classes.description} ta="center" mt="md">
