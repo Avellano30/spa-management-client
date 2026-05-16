@@ -29,6 +29,8 @@ export interface SpaSettings {
     bufferTime: number;
     createdAt?: string;
     updatedAt?: string;
+    spaName?: string;
+
 }
 
 async function safeFetch<T>(url: string): Promise<T | null> {

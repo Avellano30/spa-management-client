@@ -43,8 +43,7 @@ import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
 import BookingCalendar from "../../components/BookingCalendar";
 import dayjs from "dayjs";
-// import { IconClock } from "@tabler/icons-react";
-
+import { IconCalendar, IconClock } from "@tabler/icons-react";
 interface DecodedToken {
     userId: string;
 }
@@ -874,26 +873,29 @@ export default function BookAppointment() {
 
                                                     >
                                                         {isMobile ? (
-                                                            // Mobile: horizontal layout
                                                             <Group gap="sm" wrap="nowrap">
                                                                 <Box style={{ width: 50, height: 50, flexShrink: 0, borderRadius: 8, overflow: 'hidden' }}>
                                                                     <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
                                                                 </Box>
-                                                                <Text ta="left" size="sm" fw={500}>{emp.name}</Text>
+                                                                <div style={{ flex: 1 }}>
+                                                                    <Text ta="left" size="sm" fw={500}>{emp.name}</Text>
+                                                                    {selectedEmployee === emp._id && (
+                                                                        <Badge color="green" size="xs" mt={4} variant="light">Selected</Badge>
+                                                                    )}
+                                                                </div>
                                                             </Group>
                                                         ) : (
-                                                            // Desktop: original square layout
                                                             <>
                                                                 <Box style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden", borderRadius: 8 }}>
                                                                     <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
                                                                 </Box>
                                                                 <Text ta="center" size="sm" fw={500} mt="xs">{emp.name}</Text>
+                                                                {selectedEmployee === emp._id && (
+                                                                    <Badge color="green" size="sm" mt="xs" fullWidth variant="light">Selected</Badge>
+                                                                )}
                                                             </>
                                                         )}
 
-                                                        {/*<Badge color={statusUnavailable ? "gray" : canClick ? "green" : "red"} size="sm" mt="xs" fullWidth>*/}
-                                                        {/*    {statusUnavailable ? "Unavailable" : isBusy ? "Busy" : !worksThisDay ? "Off-Duty" : "Available"}*/}
-                                                        {/*</Badge>*/}
                                                     </Card>
                                                 );
                                             })}
@@ -928,195 +930,210 @@ export default function BookAppointment() {
                                     </Box>
                                 </Group>
                                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mb="md">
-                                        <Box p="md" style={{ backgroundColor: '#f8f9fa', borderRadius: '14px' }}>
-                                            <Group justify="space-between" mb="xs">
-                                                <Text fw={700} size="md" c="dark.3">SELECT DATE</Text>
-                                                {date && (
-                                                    <Badge variant="dot" color="green" size="sm">
-                                                        {dayjs(date).format("dddd, MMMM D")}
-                                                    </Badge>
-                                                )}
-                                            </Group>
-                                            <DateInput
-                                                placeholder="Pick a date"
-                                                value={date ? new Date(date) : null}
-                                                onChange={(val) => setDate(val ? dayjs(val).format("YYYY-MM-DD") : null)}
-                                                minDate={new Date()}
-                                                size="md"
-                                                radius="xl"
-                                                styles={(theme) => ({
-                                                    input: {
-                                                        backgroundColor: 'white',
-                                                        border: `1.5px solid ${date ? theme.colors.green[5] : theme.colors.gray[3]}`,
-                                                        borderRadius: '12px',
-                                                        fontSize: '15px',
-                                                        fontWeight: 500,
-                                                        padding: '12px 16px',
-                                                        cursor: 'pointer',
-                                                        transition: 'border-color 0.2s ease',
-                                                        '&:focus': {
-                                                            borderColor: theme.colors.blue[5],
-                                                            boxShadow: `0 0 0 2px ${theme.colors.blue[1]}`,
-                                                        },
-                                                    },
-                                                })}
-                                                rightSection={
-                                                    date ? (
-                                                        <Text
-                                                            size="xs"
-                                                            c="red"
-                                                            style={{ cursor: 'pointer', userSelect: 'none' }}
-                                                            onClick={() => setDate(null)}
-                                                        >
-                                                            ✕
-                                                        </Text>
-                                                    ) : null
-                                                }
-                                            />
 
+                                    {/* DATE */}
+                                    <Box p="lg" style={{
+                                        background: "white",
+                                        borderRadius: "16px",
+                                        border: "1px solid var(--mantine-color-gray-2)",
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                                    }}>
+                                        <Group justify="space-between" mb="sm" align="center">
+                                            <Group gap="xs">
+                                                <Box style={{
+                                                    width: 32, height: 32, borderRadius: 8,
+                                                    background: "var(--mantine-color-blue-0)",
+                                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                                }}>
+                                                    <IconCalendar size={16} color="var(--mantine-color-blue-6)" />
+                                                </Box>
+                                                <Text fw={600} size="sm" c="dark.4">Date</Text>
+                                            </Group>
                                             {date && (
-                                                <Group gap="xs" mt="sm">
-                                                    <Badge color="green" variant="light" size="sm">
-                                                        📅 {dayjs(date).format("MMM D, YYYY")}
-                                                    </Badge>
-                                                    <Badge color="blue" variant="light" size="sm">
-                                                        {dayjs(date).format("dddd")}
-                                                    </Badge>
-                                                </Group>
+                                                <Badge variant="light" color="blue" radius="xl" size="sm">
+                                                    {dayjs(date).format("ddd, MMM D")}
+                                                </Badge>
                                             )}
-                                        </Box>
-                                        <Box p="md" style={{ backgroundColor: '#f8f9fa', borderRadius: '14px' }}>
-                                            <Group justify="space-between" mb="xs" align="flex-start">
-                                                <div>
-                                                    <Text fw={700} size="md" c="dark.3" mb={4}>SELECT TIME</Text>
-                                                    {time && (occupancy?.bufferTime ?? spaSettings?.bufferTime) ? (
-                                                        <Stack gap={0} align="flex-end" mt={4}>
-                                                            <Group gap="xs">
-                                                                <Text size="xs" c="dimmed">
-                                                                    Room clears at:
-                                                                </Text>
-                                                                <Badge variant="filled" color="blue" size="lg">
-                                                                    {dayjs(`2026-01-01T${time}`)
-                                                                        .add(services.reduce((sum, s) => sum + s.service.duration, 0), "minute")
-                                                                        .add(occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0, "minute")
-                                                                        .format("h:mm A")}
-                                                                </Badge>
-                                                            </Group>
-                                                            <Text size="10px" c="dimmed" mt={7}>
-                                                                (Includes {occupancy?.bufferTime ?? spaSettings?.bufferTime} min cleanup)
-                                                            </Text>
-                                                        </Stack>
-                                                    ) : null}
-                                                </div>
-                                                <Badge variant="dot" color={selectedEmployee ? "blue" : "gray"} size="sm">
-                                                    {selectedEmployee ? "Therapist availability" : "Pick a therapist first"}
+                                        </Group>
+
+                                        <DateInput
+                                            placeholder="Select a date"
+                                            value={date ? new Date(date) : null}
+                                            onChange={(val) => setDate(val ? dayjs(val).format("YYYY-MM-DD") : null)}
+                                            minDate={new Date()}
+                                            size="md"
+                                            radius="md"
+                                            styles={{
+                                                input: {
+                                                    border: "1.5px solid var(--mantine-color-gray-3)",
+                                                    borderRadius: "10px",
+                                                    fontWeight: 500,
+                                                    fontSize: "14px",
+                                                },
+                                            }}
+                                            rightSection={
+                                                date ? (
+                                                    <Text size="xs" c="dimmed" style={{ cursor: "pointer" }} onClick={() => setDate(null)}>✕</Text>
+                                                ) : null
+                                            }
+                                        />
+
+                                        {date && (
+                                            <Group gap={6} mt="sm">
+                                                <Badge variant="dot" color="green" size="xs" radius="xl">
+                                                    {dayjs(date).format("MMMM D, YYYY")}
+                                                </Badge>
+                                                <Badge variant="dot" color="blue" size="xs" radius="xl">
+                                                    {dayjs(date).format("dddd")}
                                                 </Badge>
                                             </Group>
-                                            <SimpleGrid cols={3} spacing="sm">
-                                                {(() => {
-                                                    const openingTime = occupancy?.openingTime ?? spaSettings?.openingTime;
-                                                    const closingTime = occupancy?.closingTime ?? spaSettings?.closingTime;
-                                                    if (!openingTime || !closingTime) return [];
+                                        )}
+                                    </Box>
 
-                                                    const bufferMins = occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 15;
-
-                                                    // Generate hourly slots
-                                                    const slots: string[] = [];
-                                                    let current = dayjs(`2026-01-01T${openingTime}`);
-                                                    const closing = dayjs(`2026-01-01T${closingTime}`);
-                                                    const end = closing.isBefore(current) ? closing.add(1, "day") : closing;
-                                                    while (current.isBefore(end)) {
-                                                        slots.push(current.format("HH:mm"));
-                                                        current = current.add(1, "hour");
-                                                    }
-
-                                                    // Add buffer end times from existing bookings
-                                                    if (occupancy?.bookings) {
-                                                        occupancy.bookings.forEach(({ end: bookingEnd }) => {
-                                                            const bufferEndTime = dayjs(`2026-01-01T${bookingEnd}`)
-                                                                .add(bufferMins, 'minute')
-                                                                .format("HH:mm");
-                                                            if (!slots.includes(bufferEndTime)) {
-                                                                slots.push(bufferEndTime);
-                                                            }
-                                                        });
-                                                    }
-
-                                                    // Sort all slots chronologically
-                                                    return slots.sort((a, b) => {
-                                                        const aMin = dayjs(`2026-01-01T${a}`).valueOf();
-                                                        const bMin = dayjs(`2026-01-01T${b}`).valueOf();
-                                                        return aMin - bMin;
-                                                    });
-                                                })().map((slot) => {
-                                                    const disabled = isSlotDisabled(slot);
-                                                    const noTherapist = !selectedEmployee;
-                                                    const selected = time === slot;
-                                                    return (
-                                                        <Button
-                                                            key={slot}
-                                                            onClick={() => !disabled && !noTherapist && setTime(slot)}
-                                                            disabled={disabled || noTherapist}
-                                                            variant={selected ? "filled" : "light"}
-                                                            color={selected ? "blue" : disabled || noTherapist ? "gray" : "teal"}
-                                                            radius="xl"
-                                                            size="sm"
-                                                            styles={(theme) => ({
-                                                                root: {
-                                                                    transition: 'all 0.2s ease',
-                                                                    opacity: disabled || noTherapist ? 0.4 : 1,
-                                                                    border: selected ? 'none' : `1px solid ${disabled || noTherapist ? 'transparent' : theme.colors.teal[1]}`,
-                                                                    padding: '6px 4px',
-                                                                    '&:hover': {
-                                                                        transform: disabled || noTherapist ? 'none' : 'translateY(-2px)',
-                                                                        boxShadow: disabled || noTherapist ? 'none' : theme.shadows.xs,
-                                                                    },
-                                                                },
-                                                                inner: {
-                                                                    textDecoration: disabled ? 'line-through' : 'none',
-                                                                    flexDirection: 'column',
-                                                                    gap: 0,
-                                                                },
-                                                                label: {
-                                                                    fontSize: '11px',
-                                                                    lineHeight: 1.2,
-                                                                    whiteSpace: 'pre-line',
-                                                                }
-                                                            })}
-                                                        >
-                                                            {dayjs(`2026-01-01 ${slot}`).format("h:mm[\n]A")}
-                                                        </Button>
-                                                    );
-                                                })}
-                                            </SimpleGrid>
-
-                                            {time && (
-                                                <Box mt="md" p="xs" style={{ backgroundColor: '#f0faf0', borderRadius: '8px' }}>
-                                                    <Text size="xs" c="dimmed">
-                                                        <b>Service Duration:</b> {services.reduce((sum, s) => sum + s.service.duration, 0)} mins
-                                                    </Text>
-                                                    <Text size="xs" c="dimmed">
-                                                        <b>Buffer Time:</b> {occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0} mins
-                                                    </Text>
-                                                    <Text size="xs" fw={700} c="green.7">
-                                                        <b>Session ends at:</b> {dayjs(`2026-01-01T${time}`)
-                                                        .add(services.reduce((sum, s) => sum + s.service.duration, 0), 'minute')
-                                                        .format('h:mm A')}
-                                                    </Text>
-                                                    {/*<Text size="xs" c="dimmed">*/}
-                                                    {/*    <b>Room clears at:</b> {dayjs(`2026-01-01T${time}`)*/}
-                                                    {/*    .add(services.reduce((sum, s) => sum + s.service.duration, 0) + (occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0), 'minute')*/}
-                                                    {/*    .format('h:mm A')}*/}
-                                                    {/*</Text>*/}
+                                    {/* TIME */}
+                                    <Box p="lg" style={{
+                                        background: "white",
+                                        borderRadius: "16px",
+                                        border: "1px solid var(--mantine-color-gray-2)",
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                                    }}>
+                                        <Group justify="space-between" mb="sm" align="center">
+                                            <Group gap="xs">
+                                                <Box style={{
+                                                    width: 32, height: 32, borderRadius: 8,
+                                                    background: "var(--mantine-color-teal-0)",
+                                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                                }}>
+                                                    <IconClock size={16} color="var(--mantine-color-teal-6)" />
                                                 </Box>
-                                            )}
-
-                                            <Group gap="xs" mt="md" justify="center">
-                                                <Badge color="teal" variant="light" size="xs">Available</Badge>
-                                                <Badge color="blue" variant="filled" size="xs">Selected</Badge>
-                                                <Badge color="gray" variant="light" size="xs" style={{ opacity: 0.5 }}>Full / Busy</Badge>
+                                                <Text fw={600} size="sm" c="dark.4">Time</Text>
                                             </Group>
-                                        </Box>
+                                            {!selectedEmployee ? (
+                                                <Badge variant="light" color="gray" radius="xl" size="sm">Select a therapist first</Badge>
+                                            ) : time && (occupancy?.bufferTime ?? spaSettings?.bufferTime) ? (
+                                                <Badge variant="light" color="teal" radius="xl" size="sm">
+                                                    Clears at {dayjs(`2026-01-01T${time}`)
+                                                    .add(services.reduce((sum, s) => sum + s.service.duration, 0), "minute")
+                                                    .add(occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0, "minute")
+                                                    .format("h:mm A")}
+                                                </Badge>
+                                            ) : null}
+                                        </Group>
+
+                                        <SimpleGrid cols={4} spacing={8}>
+                                            {(() => {
+                                                const openingTime = occupancy?.openingTime ?? spaSettings?.openingTime;
+                                                const closingTime = occupancy?.closingTime ?? spaSettings?.closingTime;
+                                                if (!openingTime || !closingTime) return [];
+                                                const bufferMins = occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 15;
+                                                const generatedSlots: string[] = [];
+                                                let current = dayjs(`2026-01-01T${openingTime}`);
+                                                const closing = dayjs(`2026-01-01T${closingTime}`);
+                                                const end = closing.isBefore(current) ? closing.add(1, "day") : closing;
+                                                while (current.isBefore(end)) {
+                                                    generatedSlots.push(current.format("HH:mm"));
+                                                    current = current.add(1, "hour");
+                                                }
+                                                if (occupancy?.bookings) {
+                                                    occupancy.bookings.forEach(({ end: bookingEnd }) => {
+                                                        const bufferEnd = dayjs(`2026-01-01T${bookingEnd}`)
+                                                            .add(bufferMins, "minute")
+                                                            .format("HH:mm");
+                                                        if (!generatedSlots.includes(bufferEnd)) generatedSlots.push(bufferEnd);
+                                                    });
+                                                }
+                                                return generatedSlots.sort((a, b) =>
+                                                    dayjs(`2026-01-01T${a}`).valueOf() - dayjs(`2026-01-01T${b}`).valueOf()
+                                                );
+                                            })().map((slot) => {
+                                                const disabled = isSlotDisabled(slot);
+                                                const noTherapist = !selectedEmployee;
+                                                const selected = time === slot;
+                                                const unavailable = disabled || noTherapist;
+                                                return (
+                                                    <button
+                                                        key={slot}
+                                                        onClick={() => { if (!unavailable) setTime(slot); }}
+                                                        disabled={unavailable}
+                                                        style={{
+                                                            borderRadius: 10,
+                                                            padding: "10px 4px",
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            alignItems: "center",
+                                                            gap: 2,
+                                                            cursor: unavailable ? "not-allowed" : "pointer",
+                                                            border: selected
+                                                                ? "2px solid var(--mantine-color-blue-5)"
+                                                                : unavailable
+                                                                    ? "1.5px solid var(--mantine-color-gray-2)"
+                                                                    : "1.5px solid var(--mantine-color-teal-3)",
+                                                            background: selected
+                                                                ? "var(--mantine-color-blue-0)"
+                                                                : unavailable
+                                                                    ? "white"
+                                                                    : "var(--mantine-color-teal-0)",
+                                                            opacity: unavailable ? 0.38 : 1,
+                                                            transition: "border-color 0.14s ease, background 0.14s ease",
+                                                            position: "relative",
+                                                            width: "100%",
+                                                        }}
+                                                    >
+                                                        {selected && (
+                                                            <span style={{
+                                                                position: "absolute", top: 0, left: 0, right: 0,
+                                                                height: 3, borderRadius: "10px 10px 0 0",
+                                                                background: "var(--mantine-color-blue-5)",
+                                                            }} />
+                                                        )}
+                                                        <Text
+                                                            size="sm"
+                                                            fw={selected ? 600 : 500}
+                                                            c={selected ? "blue.6" : unavailable ? "dimmed" : "teal.7"}
+                                                            style={{ textDecoration: disabled ? "line-through" : "none", lineHeight: 1.2, pointerEvents: "none" }}
+                                                        >
+                                                            {dayjs(`2026-01-01 ${slot}`).format("h:mm")}
+                                                        </Text>
+                                                        <Text size="10px" c={selected ? "blue.4" : unavailable ? "dimmed" : "teal.5"} style={{ pointerEvents: "none" }}>
+                                                            {dayjs(`2026-01-01 ${slot}`).format("A")}
+                                                        </Text>
+                                                    </button>
+                                                );
+                                            })}
+                                        </SimpleGrid>
+
+                                        {time && (
+                                            <Box mt="md" p="sm" style={{
+                                                background: "var(--mantine-color-blue-0)",
+                                                borderRadius: 10,
+                                                border: "1px solid var(--mantine-color-blue-2)",
+                                            }}>
+                                                <Group justify="space-between">
+                                                    <Text size="xs" c="blue.7"><b>Start:</b> {dayjs(`2026-01-01T${time}`).format("h:mm A")}</Text>
+                                                    <Text size="xs" c="blue.7">
+                                                        <b>End:</b> {dayjs(`2026-01-01T${time}`)
+                                                        .add(services.reduce((sum, s) => sum + s.service.duration, 0), "minute")
+                                                        .format("h:mm A")}
+                                                    </Text>
+                                                    <Text size="xs" c="blue.7"><b>Buffer:</b> {occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0} min</Text>
+                                                </Group>
+                                            </Box>
+                                        )}
+
+                                        <Group gap={12} justify="center" mt="md">
+                                            {[
+                                                { color: "var(--mantine-color-teal-5)", label: "Available" },
+                                                { color: "var(--mantine-color-blue-5)", label: "Selected" },
+                                                { color: "var(--mantine-color-gray-4)", label: "Unavailable" },
+                                            ].map(({ color, label }) => (
+                                                <Group key={label} gap={6}>
+                                                    <Box style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
+                                                    <Text size="xs" c="dimmed">{label}</Text>
+                                                </Group>
+                                            ))}
+                                        </Group>
+                                    </Box>
+
                                 </SimpleGrid>
 
                                 <BookingCalendar

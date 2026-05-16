@@ -1,11 +1,11 @@
 import { Carousel } from '@mantine/carousel';
-import {Button, Center, Loader, Paper, Text, Title, useMantineTheme} from '@mantine/core';
+import { Button, Center, Loader, Paper, Text, Title, useMantineTheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import classes from './CardsCarousel.module.css';
 import '@mantine/carousel/styles.css';
-import {useEffect, useState} from "react";
-import {getAllServices, type Service} from "../../../api/services";
-import {useNavigate} from "react-router";
+import { useEffect, useState } from "react";
+import { getAllServices, type Service } from "../../../api/services";
+import { useNavigate } from "react-router";
 
 function Card({ imageUrl, name, category }: Service) {
     const navigate = useNavigate();
@@ -26,7 +26,10 @@ function Card({ imageUrl, name, category }: Service) {
                     {name}
                 </Title>
             </div>
-            <Button variant="white" color="dark" onClick={() => navigate('/services')}>
+            <Button
+                className={classes.bookBtn}
+                onClick={() => navigate('/services')}
+            >
                 Book Now
             </Button>
         </Paper>
@@ -45,7 +48,6 @@ export function CardsCarousel() {
         </Carousel.Slide>
     ));
 
-
     useEffect(() => {
         getAllServices()
             .then(setServices)
@@ -53,7 +55,7 @@ export function CardsCarousel() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <Center className="h-[70vh] flex-col"><Loader size="lg" /></Center>;
+    if (loading) return <Center className="h-[70vh] flex-col"><Loader size="lg" color="blue" /></Center>;
 
     return (
         <Carousel
