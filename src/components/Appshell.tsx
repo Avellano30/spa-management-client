@@ -8,6 +8,7 @@ import {
     Stack,
     Text,
     Badge,
+    Box,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -29,8 +30,20 @@ const navData = [
     { icon: IconSettings, label: "Settings", href: "/settings" },
 ];
 
+const navStyles = {
+    root: {
+        borderRadius: 8,
+        paddingTop: 10,
+        paddingBottom: 10,
+        transition: "all 150ms ease",
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: 600,
+    },
+};
+
 function Layout({ children }: { children: React.ReactNode }) {
-    // 1. Logic Hooks & State
     const [opened, { toggle }] = useDisclosure();
     const [currentTime, setCurrentTime] = useState(dayjs());
     const [openingTime, setOpeningTime] = useState("09:00");
@@ -41,7 +54,6 @@ function Layout({ children }: { children: React.ReactNode }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // 2. Effects (Clock & Data Sync)
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(dayjs()), 1000);
         return () => clearInterval(timer);
@@ -55,117 +67,134 @@ function Layout({ children }: { children: React.ReactNode }) {
                     setOpeningTime(data.openingTime);
                     setClosingTime(data.closingTime);
                 }
-            } catch (err) { console.error("Failed to sync hours:", err); }
+            } catch (err) {
+                console.error(err);
+            }
         };
+
         syncHours();
-        window.addEventListener('focus', syncHours);
-        return () => window.removeEventListener('focus', syncHours);
+        window.addEventListener("focus", syncHours);
+        return () => window.removeEventListener("focus", syncHours);
     }, []);
 
-    // 3. Status Calculation (Fixes the "minutes" display bug)
     const currentTimeString = currentTime.format("HH:mm");
-    const isOpen = openingTime < closingTime
-        ? (currentTimeString >= openingTime && currentTimeString < closingTime)
-        : (currentTimeString >= openingTime || currentTimeString < closingTime);
+
+    const isOpen =
+        openingTime < closingTime
+            ? currentTimeString >= openingTime && currentTimeString < closingTime
+            : currentTimeString >= openingTime || currentTimeString < closingTime;
 
     const formatHour = (timeStr: string) => {
-        if (!timeStr || !timeStr.includes(':')) return timeStr;
-        const [hourStr, minuteStr] = timeStr.split(':');
-        let h = parseInt(hourStr, 10);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const displayH = h % 12 || 12;
-        return `${displayH}:${minuteStr} ${ampm}`; // Preserves minutes like :30
+        if (!timeStr?.includes(":")) return timeStr;
+        const [h, m] = timeStr.split(":");
+        const hour = parseInt(h, 10);
+        return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
     };
 
-    // 4. Navigation Mapping
-    const items = navData.map((item) => (
-        <NavLink
-            key={item.label}
-            active={location.pathname.startsWith(item.href)}
-            label={item.label}
-            leftSection={<item.icon size={25} stroke={1.5} />}
-            styles={{
-                label: { fontSize: '15px', fontWeight: 600 },
-                root: { paddingTop: '12px', paddingBottom: '12px' }
-            }}
-            onClick={() => {
-                navigate(item.href);
-                if (opened) toggle();
-            }}
-        />
-    ));
+    const items = navData.map((item) => {
+        const active = location.pathname.startsWith(item.href);
+
+        return (
+            <NavLink
+                key={item.label}
+                label={item.label}
+                leftSection={<item.icon size={22} stroke={1.5} />}
+                active={active}
+                onClick={() => {
+                    navigate(item.href);
+                    if (opened) toggle();
+                }}
+                styles={{
+                    ...navStyles,
+                    root: {
+                        ...navStyles.root,
+                        backgroundColor: active ? "rgba(0,0,0,0.06)" : "transparent",
+                        borderLeft: active ? "3px solid var(--mantine-color-blue-6)" : "3px solid transparent",
+                        paddingLeft: 12,
+                    },
+                }}
+            />
+        );
+    });
 
     return (
         <AppShell
-            header={{ height: 70 }}
-            navbar={{ width: 300, breakpoint: "sm", collapsed: { mobile: !opened } }}
+            header={{ height: 64 }}
+            navbar={{ width: 280, breakpoint: "sm", collapsed: { mobile: !opened } }}
             padding="md"
         >
-            <AppShell.Header bg="black">
-                <Group h="100%" px="md">
-                    <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" color="white" />
-                    <Text c="white" fw={500} size="xl">
-                        Welcome back, {authState?.firstName}!
-                    </Text>
+            {/* HEADER */}
+            <AppShell.Header bg="dark">
+                <Group h="100%" px="md" justify="space-between">
+                    <Group>
+                        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" color="white" />
+                        <Box>
+                            <Text c="dimmed" size="xs">
+                                Welcome back
+                            </Text>
+                            <Text c="white" fw={600} size="md">
+                                {authState?.firstName}
+                            </Text>
+                        </Box>
+                    </Group>
                 </Group>
             </AppShell.Header>
 
-            <AppShell.Navbar>
-                {/* 5. Restored Sidebar Info Section */}
-                <AppShell.Section p="md">
-                    <Stack gap="xs">
-                        <Stack gap={0}>
-                            <Text size="xs" fw={700} c="dimmed" tt="uppercase">{currentTime.format("dddd")}</Text>
-                            <Text size="md" fw={600}>{currentTime.format("MMMM D, YYYY")}</Text>
-                        </Stack>
+            {/* NAVBAR */}
+            <AppShell.Navbar p="sm">
 
-                        <Divider variant="dashed" />
 
-                        <Stack gap="xs">
+                    <Stack gap={6}>
+                        <Text size="xs" tt="uppercase" c="dimmed" fw={700}>
+                            {currentTime.format("dddd, MMM D")}
+                        </Text>
+
+                        <Text fw={700} style={{ fontVariantNumeric: "tabular-nums" }}>
+                            {currentTime.format("h:mm:ss A")}
+                        </Text>
+
+                        <Divider my={6} />
+
+                        <Group justify="space-between">
                             <Stack gap={0}>
-                                <Text
-                                    size="xl"
-                                    fw={800}
-                                    style={{ fontVariantNumeric: 'tabular-nums' }} // Double {{ }} are required
-                                >
-                                    {currentTime.format("h:mm:ss A")}
+                                <Text size="xs" c="dimmed" tt="uppercase">
+                                    Store Hours
+                                </Text>
+                                <Text size="sm" fw={600}>
+                                    {formatHour(openingTime)} – {formatHour(closingTime)}
                                 </Text>
                             </Stack>
 
-                            <Group justify="space-between" align="flex-end">
-                                <Stack gap={0}>
-                                    <Text size="xs" fw={700} c="dimmed" tt="uppercase">Store Hours</Text>
-                                    <Text size="sm" fw={600}>
-                                        {formatHour(openingTime)} - {formatHour(closingTime)}
-                                    </Text>
-                                </Stack>
-                                <Badge color={isOpen ? "green" : "red"} variant="light" size="sm">
-                                    {isOpen ? "OPEN" : "CLOSED"}
-                                </Badge>
-                            </Group>
-                        </Stack>
+                            <Badge color={isOpen ? "green" : "red"} variant="light">
+                                {isOpen ? "OPEN" : "CLOSED"}
+                            </Badge>
+                        </Group>
                     </Stack>
-                </AppShell.Section>
 
-                <Divider mx="md" />
+                {/* NAV */}
+                <ScrollArea mt="md" style={{ flex: 1 }}>
+                    <Stack gap={4}>{items}</Stack>
+                </ScrollArea>
 
-                <AppShell.Section grow my="md" component={ScrollArea} px="md">
-                    {items}
-                </AppShell.Section>
+                <Divider my="sm" />
 
-                <Divider mx="md" />
-
-                <AppShell.Section p="md">
-                    <NavLink
-                        label="Sign out"
-                        leftSection={<IconLogout size={25} stroke={1.5} />}
-                        styles={{
-                            label: { fontSize: '15px', fontWeight: 600 },
-                            root: { paddingTop: '12px', paddingBottom: '12px' }
-                        }}
-                        onClick={handleLogout}
-                    />
-                </AppShell.Section>
+                {/* LOGOUT */}
+                <NavLink
+                    label="Sign out"
+                    leftSection={<IconLogout size={22} />}
+                    onClick={handleLogout}
+                    styles={{
+                        root: {
+                            borderRadius: 8,
+                            paddingTop: 10,
+                            paddingBottom: 10,
+                            color: "var(--mantine-color-red-6)",
+                        },
+                        label: {
+                            fontWeight: 600,
+                        },
+                    }}
+                />
             </AppShell.Navbar>
 
             <AppShell.Main>{children}</AppShell.Main>
