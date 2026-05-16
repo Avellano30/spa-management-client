@@ -82,6 +82,14 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
             if (slotTime.isBefore(now)) return true;
         }
 
+        const rescheduleDate = dayjs(newDate as Date).format("YYYY-MM-DD");
+        const appointmentDate = dayjs(appointment.date).format("YYYY-MM-DD");
+        if (rescheduleDate === appointmentDate) {
+            const apptTime = dayjs(`2026-01-01T${appointment.startTime}`);
+            const checkSlot = dayjs(`2026-01-01T${checkTime}`);
+            if (checkSlot.isBefore(apptTime) || checkSlot.isSame(apptTime)) return true;
+        }
+
         if (!occupancy) return false;
 
         const { openingTime, closingTime, totalRooms, bookings } = occupancy;
@@ -187,8 +195,7 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
     appointmentStart.setHours(startHour, startMinute, 0, 0);
 
     const canReschedule =
-        ["Approved", "Rescheduled"].includes(appointment.status) &&
-        appointmentStart.getTime() - Date.now() > 24 * 60 * 60 * 1000;
+        ["Approved", "Rescheduled"].includes(appointment.status);
 
     const handlePay = async (type: "Downpayment" | "Balance" | "Full") => {
         setLoading(true);
