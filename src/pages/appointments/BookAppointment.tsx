@@ -21,6 +21,7 @@ import {
     Badge,
     SimpleGrid,
     Select,
+    ThemeIcon
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 
@@ -43,7 +44,7 @@ import { createPaymongoPayment } from "../../api/payment";
 import { getSpaSettings, type SpaSettings } from "../../api/settings";
 import BookingCalendar from "../../components/BookingCalendar";
 import dayjs from "dayjs";
-import { IconCalendar, IconClock } from "@tabler/icons-react";
+import { IconCalendar, IconClock,IconBed } from "@tabler/icons-react";
 interface DecodedToken {
     userId: string;
 }
@@ -182,6 +183,20 @@ export default function BookAppointment() {
             setAppointmentsForDay(all.filter((a) => a.date.split("T")[0] === date));
         });
     }, [date]);
+
+    useEffect(() => {
+        if (!date || !selectedEmployee) return;
+        const emp = employees.find((e) => e._id === selectedEmployee);
+        if (emp && !isEmployeeWorkingOnDay(emp, date)) {
+            setSelectedEmployee(null);
+            setTime("");
+            notifications.show({
+                title: "Therapist Off-Duty",
+                message: `${emp.name} does not work on ${dayjs(date).format("dddd")}. Please select another therapist.`,
+                color: "yellow",
+            });
+        }
+    }, [date, employees]);
 
     // ── Helper functions ───────────────────────────────────────────────────────
 
@@ -809,7 +824,7 @@ export default function BookAppointment() {
                             <Stepper.Step label="Select Availability">
                                 <Group grow mb="md">
                                     <Box mb="md">
-                                        <Text fw={600} mb="xs">Massage Therapist</Text>
+                                        <Text fw={600} mb="xs">Select a massage therapist</Text>
                                         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
                                             {employees.map((emp, index) => {
                                                 const statusUnavailable = emp.status === "unavailable";
@@ -864,6 +879,7 @@ export default function BookAppointment() {
                                                                     message: `${emp.name} does not work on ${dayjs(date).format("dddd")}.`,
                                                                     color: "yellow"
                                                                 });
+
                                                                 return;
                                                             }
 
@@ -879,6 +895,14 @@ export default function BookAppointment() {
                                                                 </Box>
                                                                 <div style={{ flex: 1 }}>
                                                                     <Text ta="left" size="sm" fw={500}>{emp.name}</Text>
+                                                                    {!worksThisDay && date && (
+                                                                        <Badge color="orange" size="xs" mt={4} variant="light">
+                                                                            Off on {dayjs(date).format("dddd")}
+                                                                        </Badge>
+                                                                    )}
+                                                                    {statusUnavailable && (
+                                                                        <Badge color="red" size="xs" mt={4} variant="light">Unavailable</Badge>
+                                                                    )}
                                                                     {selectedEmployee === emp._id && (
                                                                         <Badge color="green" size="xs" mt={4} variant="light">Selected</Badge>
                                                                     )}
@@ -890,6 +914,12 @@ export default function BookAppointment() {
                                                                     <Image src={emp.imageUrl || "/img/placeholder.jpg"} alt={emp.name} fit="cover" height="100%" width="100%" />
                                                                 </Box>
                                                                 <Text ta="center" size="sm" fw={500} mt="xs">{emp.name}</Text>
+                                                                {statusUnavailable && (
+                                                                    <Badge color="red" size="xs" mt={4} fullWidth variant="light">Unavailable</Badge>
+                                                                )}
+                                                                {!statusUnavailable && !worksThisDay && date && (
+                                                                    <Badge color="orange" size="xs" mt={4} fullWidth variant="light">Off on {dayjs(date).format("dddd")}</Badge>
+                                                                )}
                                                                 {selectedEmployee === emp._id && (
                                                                     <Badge color="green" size="sm" mt="xs" fullWidth variant="light">Selected</Badge>
                                                                 )}
@@ -915,15 +945,41 @@ export default function BookAppointment() {
                                                     return Math.max(0, occupancy.totalRooms - booked);
                                                 })();
                                                 return (
-                                                    <>
-                                                        <Text fw={600} mb="xs" ta="center">Available Beds</Text>
-                                                        <Text size="48px" fw={700} ta="center"
-                                                              c={beds === 0 ? "red" : "green"}
-                                                              style={{ lineHeight: 1 }}
-                                                        >
-                                                            {beds === 0 ? "No Available Beds" : beds}
-                                                        </Text>
-                                                    </>
+                                                    <Box
+                                                        mt="md"
+                                                        p="lg"
+                                                        style={{
+                                                            borderRadius: 16,
+                                                            border: beds === 0
+                                                                ? "1px solid var(--mantine-color-red-3)"
+                                                                : "1px solid var(--mantine-color-gray-2)",
+                                                            textAlign: "center",
+                                                        }}
+                                                    >
+                                                        <Group justify="center" gap={6} mb={8}>
+                                                            <ThemeIcon
+                                                                variant="light"
+                                                                color={beds === 0 ? "red" : "teal"}
+                                                                size="sm"
+                                                                radius="xl"
+                                                            >
+                                                                <IconBed size={14} />
+                                                            </ThemeIcon>
+                                                            <Text size="sm" c="dimmed">Available beds</Text>
+                                                        </Group>
+
+                                                        {beds === 0 ? (
+                                                            <>
+                                                                <Text size="xl" fw={500} c="red">Fully booked</Text>
+                                                                <Text size="xs" c="red" mt={4} opacity={0.7}>no beds available for this slot</Text>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Text size="52px" fw={500} c="teal" style={{ lineHeight: 1 }}>{beds}</Text>
+                                                                <Text size="xs" c="dimmed" mt={4}>beds open for this slot</Text>
+                                                            </>
+                                                        )}
+                                                    </Box>
                                                 );
                                             })()}
                                         </Box>
@@ -963,6 +1019,7 @@ export default function BookAppointment() {
                                             minDate={new Date()}
                                             size="md"
                                             radius="md"
+                                            disabled={!selectedEmployee}
                                             styles={{
                                                 input: {
                                                     border: "1.5px solid var(--mantine-color-gray-3)",
@@ -1010,14 +1067,12 @@ export default function BookAppointment() {
                                             </Group>
                                             {!selectedEmployee ? (
                                                 <Badge variant="light" color="gray" radius="xl" size="sm">Select a therapist first</Badge>
-                                            ) : time && (occupancy?.bufferTime ?? spaSettings?.bufferTime) ? (
-                                                <Badge variant="light" color="teal" radius="xl" size="sm">
-                                                    Clears at {dayjs(`2026-01-01T${time}`)
-                                                    .add(services.reduce((sum, s) => sum + s.service.duration, 0), "minute")
-                                                    .add(occupancy?.bufferTime ?? spaSettings?.bufferTime ?? 0, "minute")
-                                                    .format("h:mm A")}
+                                            ) : date && (
+                                                <Badge variant="light" color="blue" radius="xl" size="sm">
+                                                    {dayjs(date).format("ddd, MMM D")}
                                                 </Badge>
-                                            ) : null}
+                                            )}
+
                                         </Group>
 
                                         <SimpleGrid cols={4} spacing={8}>
@@ -1139,6 +1194,7 @@ export default function BookAppointment() {
                                 <BookingCalendar
                                     employee={employees.find((e) => e._id === selectedEmployee)}
                                     onDateSelect={(selectedDate) => {
+                                        if (!selectedEmployee) return;
                                         const normalized = dayjs(selectedDate).format("YYYY-MM-DD");
                                         console.log("BookingCalendar selected:", selectedDate, "→", normalized);
                                         setDate(normalized);
