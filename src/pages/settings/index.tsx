@@ -120,12 +120,27 @@ export default function Settings() {
                         <TextInput
                             label="First name"
                             value={form.firstname ?? ""}
-                            onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })}
+                            onChange={(e) => {
+                                const lettersOnly = e.currentTarget.value.replace(/[^a-zA-Z\s]/g, "");
+
+                                setForm({
+                                    ...form,
+                                    firstname: lettersOnly,
+                                });
+                            }}
                         />
+
                         <TextInput
                             label="Last name"
                             value={form.lastname ?? ""}
-                            onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })}
+                            onChange={(e) => {
+                                const lettersOnly = e.currentTarget.value.replace(/[^a-zA-Z\s]/g, "");
+
+                                setForm({
+                                    ...form,
+                                    lastname: lettersOnly,
+                                });
+                            }}
                         />
                     </Group>
 
@@ -139,9 +154,17 @@ export default function Settings() {
 
                     <TextInput
                         label="Phone"
+                        type="tel"
                         value={form.phone ?? ""}
-                        placeholder="e.g. +63 912 345 6789"
-                        onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })}
+                        placeholder="e.g. 09123456789"
+                        onChange={(e) => {
+                            const numbersOnly = e.currentTarget.value.replace(/\D/g, "");
+
+                            setForm({
+                                ...form,
+                                phone: numbersOnly,
+                            });
+                        }}
                     />
 
                     <Divider mt="sm" />
