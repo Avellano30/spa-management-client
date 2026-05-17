@@ -1,6 +1,8 @@
 const endpoint = import.meta.env.VITE_ENDPOINT || 'http://localhost:3000';
 
 // Added this back to fix TS2304
+
+
 export interface HomepageSettings {
     brand: {
         name: string;
@@ -45,6 +47,7 @@ async function safeFetch<T>(url: string): Promise<T | null> {
         return null;
     }
 }
+
 
 export const getSpaSettings = () => safeFetch<SpaSettings>(`${endpoint}/settings`);
 export const getHomepageSettings = () => safeFetch<HomepageSettings>(`${endpoint}/homepage-settings`);
