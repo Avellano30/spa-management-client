@@ -11,35 +11,26 @@ import {
     Text,
     ThemeIcon,
     Progress,
-    Loader,
     rem,
 } from "@mantine/core";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
 import { resetPassword, verifyResetToken } from "../../api/passwordReset/passwordReset";
-import { getHomepageSettings } from "../../api/settings";
 import { getPasswordChecks, getPasswordStrength } from "../../modules/auth/handleSignup";
 
 export default function ResetPasswordPage() {
     const { token } = useParams<{ token: string }>();
     const navigate = useNavigate();
 
-    const [submitting, setSubmitting] = useState(false);
-    const [valid, setValid] = useState<boolean | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [valid, setValid] = useState(false);
     const [password, setPassword] = useState("");
     const [passwordFocused, setPasswordFocused] = useState(false);
-    const [spaName, setSpaName] = useState<string>("");
 
     // Password checks and strength
     const checks = getPasswordChecks(password);
     const { percent: strengthPercent, color: strengthColor } = getPasswordStrength(password);
 
-    // Fetch spa name from homepage settings (same pattern as EmailVerification)
-    useEffect(() => {
-        getHomepageSettings().then((s) => setSpaName(s?.brand.name || "")).catch(console.error);
-    }, []);
-
-    // Verify reset token
     useEffect(() => {
         const verify = async () => {
             try {
@@ -63,7 +54,7 @@ export default function ResetPasswordPage() {
             return;
         }
 
-        setSubmitting(true);
+        setLoading(true);
         try {
             await resetPassword(token!, password);
             showNotification({ title: "Success", message: "Password reset successfully", color: "green" });
@@ -71,21 +62,11 @@ export default function ResetPasswordPage() {
         } catch (err: any) {
             showNotification({ title: "Error", message: err.message || "Failed", color: "red" });
         } finally {
-            setSubmitting(false);
+            setLoading(false);
         }
     };
 
-    // Still verifying token
-    if (valid === null) {
-        return (
-            <Container mt={60} style={{ display: "flex", justifyContent: "center" }}>
-                <Loader size="md" />
-            </Container>
-        );
-    }
-
-    // Token invalid or expired
-    if (!valid) {
+    if (!valid)
         return (
             <Container mt={60}>
                 <Title order={3} className="text-center">
@@ -93,13 +74,12 @@ export default function ResetPasswordPage() {
                 </Title>
             </Container>
         );
-    }
 
     return (
         <Container size="xs" mt={60}>
-            <div className="bg-white rounded-xl shadow-md p-10 border border-gray-100">
-                <Title order={2} mb="md" className="text-blue-600 text-center tracking-wide">
-                    {spaName}
+            <div className="bg-white rounded-lg shadow-lg p-8">
+                <Title order={2} mb="md" className="text-center text-blue-600">
+                    SPA
                 </Title>
                 <Title order={4} mb="sm" className="text-center">
                     Set New Password
@@ -107,6 +87,7 @@ export default function ResetPasswordPage() {
                 <p className="text-center text-sm mb-6">Enter your new password below</p>
 
                 <PasswordInput
+                    // className="mb-4"
                     placeholder="New password"
                     value={password}
                     onChange={(e) => setPassword(e.currentTarget.value)}
@@ -144,9 +125,8 @@ export default function ResetPasswordPage() {
                                         border: req.valid ? "1px solid rgba(46,204,113,0.2)" : undefined,
                                     }}
                                 >
-                                    {req.valid
-                                        ? <IconCheck size={rem(14)} stroke={3} style={{ color: "#2ecc71" }} />
-                                        : <IconX size={rem(14)} stroke={3} style={{ color: "#999" }} />}
+                                    {req.valid ? <IconCheck size={rem(14)} stroke={3} style={{ color: "#2ecc71" }} /> :
+                                        <IconX size={rem(14)} stroke={3} style={{ color: "#999" }} />}
                                 </ThemeIcon>
                                 <Text size="xs">{req.label}</Text>
                             </Group>
@@ -158,7 +138,7 @@ export default function ResetPasswordPage() {
                     fullWidth
                     mt="md"
                     onClick={handleSubmit}
-                    loading={submitting}
+                    loading={loading}
                     className="bg-blue-600!"
                 >
                     Reset Password
