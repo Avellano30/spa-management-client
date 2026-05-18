@@ -473,12 +473,12 @@ export default function BookAppointment() {
                     <Text size="xl" c="dimmed">
                         <strong>Booking Policy:</strong>
                         <br />• A <strong>{downPaymentPercent}% downpayment</strong> is required to confirm your booking.
-                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong>.
+                        <br />• Cancellations made by the <strong>GUEST</strong> are <strong>NON-REFUNDABLE</strong>. Refunds will only be issued for cancellations initiated by the <strong>SPA Administrator</strong>.
                         <br />• Remaining <strong>{100 - downPaymentPercent}% balance</strong> must be paid before or on the day of the appointment.
                         <br />• All appointments are subject to availability and are considered confirmed only after downpayment is received.
                         <br />• Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
                         <br />• <strong>Multiple Booking</strong> is allowed but only <strong>(1) TYPE OF SERVICE PER CATEGORY</strong> is permitted.
-                        <br /><br />
+                        <br />
                         <strong>Cancellation & Rescheduling:</strong>
                         <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
                         <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
@@ -519,12 +519,12 @@ export default function BookAppointment() {
                     <Text size="xl" c="dimmed">
                         <strong>Booking Policy:</strong>
                         <br />• A <strong>{downPaymentPercent}% downpayment</strong> is required to confirm your booking.
-                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong>.
+                        <br />• Cancellations made by the <strong>GUEST</strong> are <strong>NON-REFUNDABLE</strong>. Refunds will only be issued for cancellations initiated by the <strong>SPA Administrator</strong>.
                         <br />• Remaining <strong>{100 - downPaymentPercent}% balance</strong> must be paid before or on the day of the appointment.
                         <br />• All appointments are subject to availability and are considered confirmed only after downpayment is received.
                         <br />• Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
                         <br />• <strong>Multiple Booking</strong> is allowed but only <strong>(1) TYPE OF SERVICE PER CATEGORY</strong> is permitted.
-                        <br /><br />
+                        <br />
                         <strong>Cancellation & Rescheduling:</strong>
                         <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
                         <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
@@ -627,12 +627,37 @@ export default function BookAppointment() {
                     >
                         <Text size="md" fw={700} mb="xs">📋 Terms & Conditions Summary</Text>
                         <Stack gap={4}>
-                            <Text size="md" c="dimmed">• A <b>{downPaymentPercent}% downpayment</b> is required to confirm your booking.</Text>
-                            <Text size="md" c="dimmed">• Remaining <b>{100 - downPaymentPercent}% balance</b> must be paid before or on the day of the appointment.</Text>
-                            <Text size="md" c="dimmed">• Only <b>2 pending</b> bookings are allowed at a time.</Text>
-                            <Text size="md" c="dimmed">• Cancellations or reschedule requests made less than <b>24 hours</b> before the appointment may not be accommodated.</Text>
-                            <Text size="md" c="dimmed">• Arriving more than <b>15 minutes late</b> may result in a shortened session.</Text>
-                            <Text size="md" c="dimmed">• Inappropriate behavior may result in <b>immediate termination</b> of the session with no refund.</Text>
+                            <Text size="md" c="dimmed">
+                                • A <b>{downPaymentPercent}% down payment</b> is required to confirm your booking.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • Cancellations made by the <b>GUEST</b> are <b>NON-REFUNDABLE</b>.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • <b>REFUNDS</b> will only be issued for cancellations initiated by the <b>SPA Administrator</b>.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • The remaining <b>{100 - downPaymentPercent}% balance</b> must be paid before or on the day of the appointment.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • Only <b>2 pending</b> bookings are allowed at a time.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • Cancellation or reschedule requests made less than <b>24 hours</b> before the appointment may not be accommodated.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • Arriving more than <b>15 minutes late</b> may result in a shortened session.
+                            </Text>
+
+                            <Text size="md" c="dimmed">
+                                • Inappropriate behavior may result in the <b>immediate termination</b> of the session without a refund.
+                            </Text>
                         </Stack>
                         <Text
                             size="xs"

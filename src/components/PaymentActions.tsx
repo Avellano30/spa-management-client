@@ -329,12 +329,12 @@ export const PaymentActions = ({ appointment, refresh }: any) => {
                     <Text size="xl" c="dimmed">
                         <strong>Booking Policy:</strong>
                         <br />• A downpayment is required to confirm your booking.
-                        <br />• The downpayment or full payment is <strong>(REFUNDABLE upon cancellation)</strong> only from the <strong>SPA Administrator</strong>.
+                        <br />• Cancellations made by the <strong>GUEST</strong> are <strong>NON-REFUNDABLE</strong>. Refunds will only be issued for cancellations initiated by the <strong>SPA Administrator</strong>.
                         <br />• Remaining balance must be paid before or on the day of the appointment.
                         <br />• All appointments are subject to availability and are considered confirmed only after downpayment is received.
                         <br />• Only <strong>(2) PENDING</strong> bookings are allowed for security purposes.
                         <br />• <strong>Multiple Booking</strong> is allowed but only <strong>(1) TYPE OF SERVICE PER CATEGORY</strong> is permitted.
-                        <br /><br />
+                        <br />
                         <strong>Cancellation & Rescheduling:</strong>
                         <br />• You may <strong>cancel</strong> an appointment only while it is still marked as <strong>Approved</strong>.
                         <br />• You may <strong>reschedule</strong> an appointment if it is <strong>Approved.</strong>
