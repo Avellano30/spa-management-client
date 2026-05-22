@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { rem } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
-
+import { logger } from '../../lib/logger';
 /**
  * Utility: keep only digits
  */
@@ -199,6 +199,7 @@ export async function handleRegister(params: {
         console.log("response ok:", response.ok); // ← add this
 
         if (!response.ok) {
+            logger.warn('Client sign up failed - user exists', { email });
             setErrorMessage("This user already exists");
             triggerShake();
             return;
@@ -209,6 +210,7 @@ export async function handleRegister(params: {
 
         if (!session.token) {
             // Let the parent know we're done BEFORE navigating
+            logger.info('Client signed up - awaiting email verification', { email });
             if (params.setShake) params.setShake(false);
             navigate(session.redirect);
             return;
@@ -221,6 +223,7 @@ export async function handleRegister(params: {
         });
 
         localStorage.setItem("session", session.token);
+        logger.info('Client signed up', { method: 'email', email });
         navigate(redirect || "/my-appointments");
     } catch (error) {
         console.error("Fetch error:", error);

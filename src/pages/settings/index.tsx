@@ -12,7 +12,7 @@ import {
 
 } from "@mantine/core";
 import { IconCheck, IconAlertCircle } from "@tabler/icons-react";
-
+import { logger } from '../../lib/logger';
 const endpoint = import.meta.env.VITE_ENDPOINT;
 
 interface ClientProfile {
@@ -86,9 +86,13 @@ export default function Settings() {
                 body: JSON.stringify(form),
             });
             if (!res.ok) throw new Error();
+            logger.info('Client updated profile settings', {  // ← add
+                fields: Object.keys(form),
+            });
             setSuccess(true);
             await fetchProfile();
         } catch {
+            logger.error('Client failed to update profile settings', {});  // ← add
             setError("Failed to save changes. Please try again.");
         } finally {
             setSaving(false);

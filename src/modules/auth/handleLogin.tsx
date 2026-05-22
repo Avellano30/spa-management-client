@@ -6,6 +6,7 @@ import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
 import { rem } from "@mantine/core";
 import LogRocket from "logrocket";
+import { logger } from '../../lib/logger';  // ← add
 
 const domain = import.meta.env.VITE_DOMAIN;
 
@@ -22,9 +23,7 @@ export default function useHandleLogin() {
         try {
             const response = await fetch(`${domain}/client/auth/google`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
 
@@ -34,7 +33,7 @@ export default function useHandleLogin() {
                     navigate(data.redirect);
                     return;
                 }
-
+                logger.warn('Client sign in failed', { method: 'email', email });  // ← add
                 setErrorMessage(true);
                 return;
             }
@@ -49,7 +48,11 @@ export default function useHandleLogin() {
             });
 
             localStorage.setItem("session", session.token);
-
+            logger.info('Client signed in', {
+                method: 'email',
+                email: session.email,
+                clientName: `${session.firstName} ${session.lastName}`  // ← add
+            });  // ← add
             navigate(redirect || "/");
         } catch (error) {
             console.error("There was a problem with the fetch operation:", error);
@@ -62,9 +65,7 @@ export default function useHandleLogin() {
             try {
                 const response = await fetch(`${domain}/client/auth/google`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code })
                 });
 
@@ -74,12 +75,12 @@ export default function useHandleLogin() {
                         navigate(data.redirect);
                         return;
                     }
-
+                    logger.warn('Client Google sign in failed', {});  // ← add
                     notifications.show({
                         color: '#e50914',
                         title: 'Something went wrong with Google Auth',
                         message: '',
-                        icon: <IconX style={{ width: rem(18), height: rem(18), }} stroke={3} />,
+                        icon: <IconX style={{ width: rem(18), height: rem(18) }} stroke={3} />,
                         autoClose: 3000,
                         withCloseButton: false
                     });
@@ -95,7 +96,11 @@ export default function useHandleLogin() {
 
                 setAuthState({ firstName: tokens.firstName, lastName: tokens.lastName, email: tokens.email });
                 localStorage.setItem('session', tokens.token);
-
+                logger.info('Client signed in', {
+                    method: 'google',
+                    email: tokens.email,
+                    clientName: `${tokens.firstName} ${tokens.lastName}`
+                });
                 LogRocket.identify(tokens.userId, {
                     name: `${tokens.firstName} ${tokens.lastName}`,
                     email: tokens.email,
